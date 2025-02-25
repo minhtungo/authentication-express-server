@@ -19,7 +19,7 @@ export class AuthService {
       if (existingUser) {
         if (existingUser.emailVerified) {
           return ServiceResponse.success(
-            "If your email is not registered, you will receive a verification email shortly.",
+            "If your email is not registered, you will receive a verification email shortly",
             null,
             StatusCodes.OK,
           );
@@ -82,7 +82,7 @@ export class AuthService {
       const errorMessage = `Error verifying email: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
-        "An error occurred while verifying email.",
+        "An error occurred while verifying email",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
@@ -95,7 +95,7 @@ export class AuthService {
 
       if (!user || !user.emailVerified || !user.id) {
         return ServiceResponse.success(
-          "If a matching account is found, a password reset email will be sent to you shortly.",
+          "If a matching account is found, a password reset email will be sent to you shortly",
           null,
           StatusCodes.OK,
         );
@@ -106,7 +106,7 @@ export class AuthService {
       // await emailService.sendPasswordResetEmail(email, user.name!, resetPasswordToken);
 
       return ServiceResponse.success(
-        "If a matching account is found, a password reset email will be sent to you shortly.",
+        "If a matching account is found, a password reset email will be sent to you shortly",
         null,
         StatusCodes.OK,
       );
@@ -114,7 +114,32 @@ export class AuthService {
       const errorMessage = `Error forgetting password: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
-        "An error occurred while forgetting password.",
+        "An error occurred while forgetting password",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async resetPassword(token: string, password: string): Promise<ServiceResponse> {
+    try {
+      const existingToken = await this.authRepository.getResetPasswordTokenByToken(token);
+
+      if (!existingToken || existingToken.expires < new Date()) {
+        return ServiceResponse.failure("Invalid token", null, StatusCodes.BAD_REQUEST);
+      }
+
+      await createTransaction(async (trx) => {
+        await this.authRepository.updateUserPassword(existingToken.userId, password, trx);
+        await this.authRepository.deleteResetPasswordTokenByToken(token, trx);
+      });
+
+      return ServiceResponse.success("Password reset successfully", null, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error resetting password: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while resetting password",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );

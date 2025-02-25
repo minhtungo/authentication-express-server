@@ -35,6 +35,10 @@ export class AuthRepository {
     await trx.delete(verificationTokens).where(eq(verificationTokens.token, token));
   }
 
+  async deleteResetPasswordTokenByToken(token: string, trx: typeof db = db) {
+    await trx.delete(resetPasswordTokens).where(eq(resetPasswordTokens.token, token));
+  }
+
   async createVerificationEmailToken(userId: string, trx: typeof db = db) {
     const token = await generateToken(appConfig.verificationEmailToken.length);
     const expires = new Date(Date.now() + appConfig.verificationEmailToken.maxAge);
@@ -79,6 +83,14 @@ export class AuthRepository {
     return token;
   }
 
+  async getResetPasswordTokenByToken(token: string) {
+    const resetPasswordToken = await db.query.resetPasswordTokens.findFirst({
+      where: eq(resetPasswordTokens.token, token),
+    });
+
+    return resetPasswordToken;
+  }
+
   async createUser(
     {
       email,
@@ -102,5 +114,10 @@ export class AuthRepository {
 
   async updateUserEmailVerified(userId: string, trx: typeof db = db) {
     await trx.update(users).set({ emailVerified: new Date() }).where(eq(users.id, userId));
+  }
+
+  async updateUserPassword(userId: string, password: string, trx: typeof db = db) {
+    const hashedPassword = await hashPassword(password);
+    await trx.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
   }
 }
