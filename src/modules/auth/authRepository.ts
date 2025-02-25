@@ -1,6 +1,6 @@
 import { appConfig } from "@/config/appConfig";
 import { db } from "@/db";
-import { userSettings, verificationTokens } from "@/db/schemas";
+import { resetPasswordTokens, userSettings, verificationTokens } from "@/db/schemas";
 import { type User, users } from "@/db/schemas/users";
 import { hashPassword } from "@/utils/password";
 import { generateToken } from "@/utils/token";
@@ -48,6 +48,28 @@ export class AuthRepository {
       })
       .onConflictDoUpdate({
         target: verificationTokens.id,
+        set: {
+          token,
+          expires,
+        },
+      });
+
+    return token;
+  }
+
+  async createResetPasswordToken(userId: string, trx: typeof db = db) {
+    const token = await generateToken(appConfig.resetPasswordToken.length);
+    const expires = new Date(Date.now() + appConfig.resetPasswordToken.maxAge);
+
+    await trx
+      .insert(resetPasswordTokens)
+      .values({
+        userId,
+        token,
+        expires,
+      })
+      .onConflictDoUpdate({
+        target: resetPasswordTokens.id,
         set: {
           token,
           expires,

@@ -8,3 +8,7 @@ export const SignUpSchema = z.object({
 export const VerifyEmailSchema = z.object({
   token: z.string(),
 });
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
