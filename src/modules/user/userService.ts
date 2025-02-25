@@ -2,8 +2,8 @@ import { StatusCodes } from "http-status-codes";
 
 import type { User } from "@/api/user/userModel";
 import { UserRepository } from "@/api/user/userRepository";
-import { ServiceResponse } from "@/common/models/serviceResponse";
 import { hashPassword } from "@/common/utils/password";
+import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { type InsertUser, userSettings, users } from "@/db/schemas";
 import { logger } from "@/server";
 

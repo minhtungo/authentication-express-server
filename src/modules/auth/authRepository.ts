@@ -1,4 +1,4 @@
-import { config } from "@/common/config/appConfig";
+import { config } from "@/config/appConfig";
 import { hashPassword } from "@/common/utils/password";
 import { generateToken } from "@/common/utils/token";
 import { db } from "@/db";

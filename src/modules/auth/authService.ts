@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 
 import { AuthRepository } from "@/api/auth/authRepository";
-import { ServiceResponse } from "@/common/models/serviceResponse";
+import { ServiceResponse } from "@/common/utils/serviceResponse";
 import { createTransaction } from "@/common/utils/transaction";
 import { logger } from "@/server";
 
