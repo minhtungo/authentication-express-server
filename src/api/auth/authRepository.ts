@@ -49,24 +49,22 @@ export class AuthRepository {
     return token;
   }
 
-  async createUser(user: InsertUser, trx: typeof db = db): Promise<User | null> {
-    const { password: plainPassword, ...userData } = user;
-
+  async createUser(
+    {
+      email,
+      password: plainPassword,
+    }: {
+      email: string;
+      password: string;
+    },
+    trx: typeof db = db,
+  ): Promise<User> {
     const password = plainPassword ? await hashPassword(plainPassword) : undefined;
 
-    const [newUser] = await trx
-      .insert(users)
-      .values({ ...userData, password })
-      .returning();
+    const [newUser] = await trx.insert(users).values({ email, password, name: email }).returning();
 
-    if (!newUser) {
-      throw new Error("User not created");
-    }
-
-    // Create default user settings
     await trx.insert(userSettings).values({
       userId: newUser.id,
-      // Add any default settings here
     });
 
     return newUser;
