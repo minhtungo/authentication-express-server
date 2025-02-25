@@ -4,14 +4,12 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { SignUpSchema, VerifyEmailSchema } from "@/modules/auth/authModel";
-import { UserSchema } from "@/modules/user/userModel";
+
 import { validateRequest } from "@/utils/httpHandlers";
 import { authController } from "./authController";
 
 export const authRegistry = new OpenAPIRegistry();
 export const authRouter: Router = express.Router();
-
-authRegistry.register("User", UserSchema);
 
 authRegistry.registerPath({
   method: "post",

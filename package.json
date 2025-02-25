@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",
+    "drizzle-zod": "^0.7.0",
     "envalid": "^8.0.0",
     "express": "^4.19.2",
     "express-rate-limit": "^7.2.0",
@@ -55,10 +56,16 @@
     "vitest": "^3.0.0"
   },
   "lint-staged": {
-    "*.{js,ts,cjs,mjs,d.cts,d.mts,json,jsonc}": ["biome check --apply --no-errors-on-unmatched"]
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,json,jsonc}": [
+      "biome check --apply --no-errors-on-unmatched"
+    ]
   },
   "tsup": {
-    "entry": ["src", "!src/**/__tests__/**", "!src/**/*.test.*"],
+    "entry": [
+      "src",
+      "!src/**/__tests__/**",
+      "!src/**/*.test.*"
+    ],
     "splitting": false,
     "sourcemap": true,
     "clean": true
