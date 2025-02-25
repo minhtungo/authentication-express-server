@@ -3,6 +3,8 @@ import { StatusCodes } from "http-status-codes";
 import type { User } from "@/api/user/userModel";
 import { UserRepository } from "@/api/user/userRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
+import { hashPassword } from "@/common/utils/password";
+import { type InsertUser, userSettings, users } from "@/db/schemas";
 import { logger } from "@/server";
 
 export class UserService {
