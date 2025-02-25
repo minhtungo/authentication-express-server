@@ -3,7 +3,7 @@ import express, { type Router } from "express";
 import { z } from "zod";
 
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
-import { SignUpSchema } from "@/modules/auth/authModel";
+import { SignUpSchema, VerifyEmailSchema } from "@/modules/auth/authModel";
 import { UserSchema } from "@/modules/user/userModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { authController } from "./authController";
@@ -26,7 +26,25 @@ authRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(z.array(UserSchema), "Success"),
+  responses: createApiResponse(z.object({}), "Success"),
 });
 
 authRouter.post("/signup", validateRequest(SignUpSchema), authController.signUp);
+
+authRegistry.registerPath({
+  method: "post",
+  path: "/auth/verify-email",
+  tags: ["Auth"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: VerifyEmailSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+authRouter.post("/verify-email", validateRequest(z.object({ body: VerifyEmailSchema })), authController.verifyEmail);

@@ -12,7 +12,7 @@ export class AuthService {
     this.authRepository = repository;
   }
 
-  async signUp(email: string, password: string) {
+  async signUp(email: string, password: string): Promise<ServiceResponse> {
     try {
       const existingUser = await this.authRepository.getUserByEmail(email);
 
@@ -61,6 +61,31 @@ export class AuthService {
       const errorMessage = `Error signing up: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while signing up.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async verifyEmail(token: string): Promise<ServiceResponse> {
+    try {
+      const existingToken = await this.authRepository.getVerificationTokenByToken(token);
+
+      if (!existingToken || existingToken.expires < new Date()) {
+        return ServiceResponse.failure("Invalid token", null, StatusCodes.BAD_REQUEST);
+      }
+
+      await createTransaction(async (trx) => {
+        await this.authRepository.updateUserEmailVerified(existingToken.userId, trx);
+        await this.authRepository.deleteVerificationTokenByToken(token, trx);
+      });
+
+      return ServiceResponse.success("Email verified", null, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error verifying email: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while verifying email.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

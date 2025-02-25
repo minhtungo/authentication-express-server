@@ -23,6 +23,14 @@ export class AuthRepository {
     return token;
   }
 
+  async getVerificationTokenByToken(token: string) {
+    const verificationToken = await db.query.verificationTokens.findFirst({
+      where: eq(verificationTokens.token, token),
+    });
+
+    return verificationToken;
+  }
+
   async deleteVerificationTokenByToken(token: string, trx: typeof db = db) {
     await trx.delete(verificationTokens).where(eq(verificationTokens.token, token));
   }
@@ -68,5 +76,9 @@ export class AuthRepository {
     });
 
     return newUser;
+  }
+
+  async updateUserEmailVerified(userId: string, trx: typeof db = db) {
+    await trx.update(users).set({ emailVerified: new Date() }).where(eq(users.id, userId));
   }
 }
