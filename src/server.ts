@@ -3,14 +3,14 @@ import express, { type Express } from "express";
 import helmet from "helmet";
 import { pino } from "pino";
 
-import { openAPIRouter } from "@/api-docs/openAPIRouter";
-import { authRouter } from "@/api/auth/authRouter";
-import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
-import { userRouter } from "@/api/user/userRouter";
-import { env } from "@/common/utils/envConfig";
+import { env } from "@/config/env";
+import { openAPIRouter } from "@/docs/openAPIRouter";
 import errorHandler from "@/middlewares/errorHandler";
 import rateLimiter from "@/middlewares/rateLimiter";
 import requestLogger from "@/middlewares/requestLogger";
+import { authRouter } from "@/modules/auth/authRouter";
+import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
+import { userRouter } from "@/modules/user/userRouter";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();

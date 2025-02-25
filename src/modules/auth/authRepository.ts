@@ -1,9 +1,9 @@
-import { config } from "@/config/appConfig";
-import { hashPassword } from "@/common/utils/password";
-import { generateToken } from "@/common/utils/token";
+import { appConfig } from "@/config/appConfig";
 import { db } from "@/db";
 import { userSettings, verificationTokens } from "@/db/schemas";
-import { type InsertUser, type User, users } from "@/db/schemas/users";
+import { type User, users } from "@/db/schemas/users";
+import { hashPassword } from "@/utils/password";
+import { generateToken } from "@/utils/token";
 import { eq } from "drizzle-orm";
 
 export class AuthRepository {
@@ -28,8 +28,8 @@ export class AuthRepository {
   }
 
   async createVerificationEmailToken(userId: string, trx: typeof db = db) {
-    const token = await generateToken(config.verificationEmailToken.length);
-    const expires = new Date(Date.now() + config.verificationEmailToken.maxAge);
+    const token = await generateToken(appConfig.verificationEmailToken.length);
+    const expires = new Date(Date.now() + appConfig.verificationEmailToken.maxAge);
 
     await trx
       .insert(verificationTokens)

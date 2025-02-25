@@ -1,9 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 
-import { AuthRepository } from "@/api/auth/authRepository";
-import { ServiceResponse } from "@/common/utils/serviceResponse";
-import { createTransaction } from "@/common/utils/transaction";
+import { AuthRepository } from "@/modules/auth/authRepository";
 import { logger } from "@/server";
+import { ServiceResponse } from "@/utils/serviceResponse";
+import { createTransaction } from "@/utils/transaction";
 
 export class AuthService {
   private authRepository: AuthRepository;

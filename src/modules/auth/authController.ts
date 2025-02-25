@@ -1,7 +1,6 @@
+import { authService } from "@/modules/auth/authService";
+import { handleServiceResponse } from "@/utils/httpHandlers";
 import type { Request, RequestHandler, Response } from "express";
-
-import { authService } from "@/api/auth/authService";
-import { handleServiceResponse } from "@/common/utils/httpHandlers";
 
 class AuthController {
   public signUp: RequestHandler = async (req: Request, res: Response) => {

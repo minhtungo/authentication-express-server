@@ -1,5 +1,5 @@
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { sessions } from './sessions';
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { sessions } from "./sessions";
 
 export const insertSessionSchema = createInsertSchema(sessions);
 export const selectSessionSchema = createSelectSchema(sessions);
