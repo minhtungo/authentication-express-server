@@ -20,8 +20,8 @@ class AuthController {
       const refreshToken = generateRefreshToken({ sub: serviceResponse.data.userId });
 
       res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        httpOnly: env.NODE_ENV === "production",
+        secure: env.NODE_ENV === "production",
         expires: new Date(Date.now() + appConfig.token.refreshToken.expiresIn),
         path: "/",
         sameSite: "lax",
@@ -50,6 +50,24 @@ class AuthController {
   public resetPassword: RequestHandler = async (req: Request, res: Response) => {
     const { token, password } = req.body;
     const serviceResponse = await authService.resetPassword(token, password);
+    return handleServiceResponse(serviceResponse, res);
+  };
+
+  public refreshToken: RequestHandler = async (req: Request, res: Response) => {
+    const refreshToken = req.cookies[appConfig.token.refreshToken.cookieName];
+
+    const serviceResponse = await authService.refreshToken(refreshToken);
+
+    if (serviceResponse.success && serviceResponse.data) {
+      const newRefreshToken = generateRefreshToken({ sub: serviceResponse.data.userId });
+      res.cookie(appConfig.token.refreshToken.cookieName, newRefreshToken, {
+        httpOnly: env.NODE_ENV === "production",
+        secure: env.NODE_ENV === "production",
+        expires: new Date(Date.now() + appConfig.token.refreshToken.expiresIn),
+        path: "/",
+        sameSite: "lax",
+      });
+    }
     return handleServiceResponse(serviceResponse, res);
   };
 }

@@ -154,7 +154,8 @@ authRouter.get("/google/callback", (req, res, next) => {
     if (!user) {
       return res.redirect(`${env.APP_ORIGIN}/sign-in?error=${encodeURIComponent("Authentication failed")}`);
     }
-    const refreshToken = await generateRefreshToken(user.id);
+    const refreshToken = generateRefreshToken({ sub: user.id });
+
     res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
       httpOnly: env.NODE_ENV === "production",
       secure: env.NODE_ENV === "production",
@@ -174,3 +175,12 @@ authRegistry.registerPath({
 });
 
 authRouter.post("/sign-out", authController.signOut);
+
+authRegistry.registerPath({
+  method: "post",
+  path: "/auth/refresh",
+  tags: ["Auth"],
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+authRouter.post("/refresh", authController.refreshToken);

@@ -1,5 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 
+import { appConfig } from "@/config/appConfig";
 import { AuthRepository } from "@/modules/auth/authRepository";
 import { logger } from "@/server";
 import { emailService } from "@/services/email/emailService";
@@ -7,6 +8,7 @@ import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
 import { generateAccessToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
+import { verify } from "jsonwebtoken";
 
 export class AuthService {
   private authRepository: AuthRepository;
@@ -50,7 +52,7 @@ export class AuthService {
       }
 
       await createTransaction(async (trx) => {
-        const newUser = await this.authRepository.createUser({ email, password }, trx);
+        const newUser = await this.authRepository.createUser({ email, password, name: email }, trx);
 
         const verificationToken = await this.authRepository.createVerificationEmailToken(newUser.id!, trx);
 
@@ -208,6 +210,37 @@ export class AuthService {
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async refreshToken(refreshToken: string): Promise<ServiceResponse<{ accessToken: string; userId: string } | null>> {
+    if (!refreshToken) {
+      return ServiceResponse.failure("Refresh token not found", null, StatusCodes.UNAUTHORIZED);
+    }
+    try {
+      const decodedToken = verify(refreshToken, appConfig.token.refreshToken.secret);
+
+      if (!decodedToken) {
+        return ServiceResponse.failure("Invalid refresh token", null, StatusCodes.UNAUTHORIZED);
+      }
+
+      const user = await this.authRepository.getUserById(decodedToken.sub as string);
+
+      if (!user) {
+        return ServiceResponse.failure("User not found", null, StatusCodes.UNAUTHORIZED);
+      }
+
+      const accessToken = generateAccessToken({
+        sub: user.id,
+        email: user.email,
+        userId: user.id,
+      });
+
+      return ServiceResponse.success("Token refreshed", { accessToken, userId: user.id }, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error refreshing token: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure("Invalid refresh token", null, StatusCodes.UNAUTHORIZED);
     }
   }
 }

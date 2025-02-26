@@ -23,6 +23,14 @@ export class AuthRepository {
     return user;
   }
 
+  async getUserById(id: string) {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, id),
+    });
+
+    return user;
+  }
+
   async getVerificationTokenByUserId(userId: string) {
     const token = await db.query.verificationTokens.findFirst({
       where: eq(verificationTokens.userId, userId),
