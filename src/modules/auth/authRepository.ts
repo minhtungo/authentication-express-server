@@ -1,6 +1,12 @@
 import { appConfig } from "@/config/appConfig";
 import { db } from "@/db";
-import { resetPasswordTokens, userSettings, verificationTokens } from "@/db/schemas";
+import {
+  resetPasswordTokens,
+  twoFactorConfirmations,
+  twoFactorTokens,
+  userSettings,
+  verificationTokens,
+} from "@/db/schemas";
 import { type User, users } from "@/db/schemas/users";
 import { hashPassword } from "@/utils/password";
 import { generateToken } from "@/utils/token";
@@ -31,12 +37,36 @@ export class AuthRepository {
     return verificationToken;
   }
 
+  async getTwoFactorTokenByEmail(email: string) {
+    const twoFactorToken = await db.query.twoFactorTokens.findFirst({
+      where: eq(twoFactorTokens.email, email),
+    });
+
+    return twoFactorToken;
+  }
+
+  async getUserSettingsByUserId(userId: string) {
+    const userSetting = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+
+    return userSetting;
+  }
+
   async deleteVerificationTokenByToken(token: string, trx: typeof db = db) {
     await trx.delete(verificationTokens).where(eq(verificationTokens.token, token));
   }
 
   async deleteResetPasswordTokenByToken(token: string, trx: typeof db = db) {
     await trx.delete(resetPasswordTokens).where(eq(resetPasswordTokens.token, token));
+  }
+
+  async deleteTwoFactorTokenByToken(token: string, trx: typeof db = db) {
+    await trx.delete(twoFactorTokens).where(eq(twoFactorTokens.token, token));
+  }
+
+  async deleteTwoFactorConfirmation(id: string, trx: typeof db = db) {
+    await trx.delete(twoFactorConfirmations).where(eq(twoFactorConfirmations.id, id));
   }
 
   async createVerificationEmailToken(userId: string, trx: typeof db = db) {
@@ -59,6 +89,12 @@ export class AuthRepository {
       });
 
     return token;
+  }
+
+  async createTwoFactorConfirmation(userId: string, trx: typeof db = db) {
+    await trx.insert(twoFactorConfirmations).values({
+      userId,
+    });
   }
 
   async createResetPasswordToken(userId: string, trx: typeof db = db) {
@@ -89,6 +125,14 @@ export class AuthRepository {
     });
 
     return resetPasswordToken;
+  }
+
+  async getTwoFactorConfirmationByUserId(userId: string) {
+    const twoFactorConfirmation = await db.query.twoFactorConfirmations.findFirst({
+      where: eq(twoFactorConfirmations.userId, userId),
+    });
+
+    return twoFactorConfirmation;
   }
 
   async createUser(

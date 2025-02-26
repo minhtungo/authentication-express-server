@@ -1,3 +1,5 @@
+import { env } from "@/config/env";
+
 export const appConfig = {
   verificationEmailToken: {
     length: 48,
@@ -6,5 +8,17 @@ export const appConfig = {
   resetPasswordToken: {
     length: 48,
     maxAge: 1000 * 60 * 10,
+  },
+  token: {
+    accessToken: {
+      cookieName: env.ACCESS_TOKEN_COOKIE_NAME,
+      secret: env.ACCESS_TOKEN_SECRET,
+      expiresIn: "30m",
+    },
+    refreshToken: {
+      cookieName: env.REFRESH_TOKEN_COOKIE_NAME,
+      secret: env.REFRESH_TOKEN_SECRET,
+      expiresIn: "7d",
+    },
   },
 };

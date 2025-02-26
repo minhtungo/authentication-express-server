@@ -3,7 +3,9 @@ import { StatusCodes } from "http-status-codes";
 import { AuthRepository } from "@/modules/auth/authRepository";
 import { logger } from "@/server";
 import { emailService } from "@/services/email/emailService";
+import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
+import { generateAccessToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
 
 export class AuthService {
@@ -64,6 +66,62 @@ export class AuthService {
       const errorMessage = `Error signing up: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while signing up.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async signIn(
+    email: string,
+    password: string,
+    code?: string,
+  ): Promise<ServiceResponse<{ accessToken: string; userId: string } | null>> {
+    try {
+      const user = await this.authRepository.getUserByEmail(email);
+
+      if (!user || !user.emailVerified || !user.id || !user.password) {
+        return ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED);
+      }
+
+      const isPasswordValid = await verifyPassword(user.password, password);
+
+      if (!isPasswordValid) {
+        return ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED);
+      }
+
+      const userSettings = await this.authRepository.getUserSettingsByUserId(user.id);
+
+      if (userSettings?.isTwoFactorEnabled) {
+        if (code) {
+          const twoFactorToken = await this.authRepository.getTwoFactorTokenByEmail(email);
+
+          if (!twoFactorToken || twoFactorToken.token !== code) {
+            return ServiceResponse.failure("Invalid two-factor code", null, StatusCodes.UNAUTHORIZED);
+          }
+          if (new Date(twoFactorToken.expires) < new Date()) {
+            return ServiceResponse.failure("Code expired", null, StatusCodes.UNAUTHORIZED);
+          }
+
+          await createTransaction(async (trx) => {
+            await this.authRepository.deleteTwoFactorTokenByToken(twoFactorToken.token, trx);
+            await this.authRepository.createTwoFactorConfirmation(user.id!, trx);
+          });
+        } else {
+          const twoFactorConfirmation = await this.authRepository.getTwoFactorConfirmationByUserId(user.id!);
+
+          if (!twoFactorConfirmation) {
+            return ServiceResponse.failure("Invalid two-factor code", null, StatusCodes.UNAUTHORIZED);
+          }
+
+          await this.authRepository.deleteTwoFactorConfirmation(twoFactorConfirmation.id!);
+        }
+      }
+
+      const accessToken = generateAccessToken(user.id);
+
+      return ServiceResponse.success("Signed in successfully", { accessToken, userId: user.id }, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error signing in: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure("An error occurred while signing in.", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 

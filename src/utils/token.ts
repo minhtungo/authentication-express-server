@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import { appConfig } from "@/config/appConfig";
+import { sign } from "jsonwebtoken";
 
 export const generateToken = async (length = 32): Promise<string> => {
   const buffer = await crypto.randomBytes(Math.ceil(length * 0.75));
@@ -36,4 +38,16 @@ export const generateRandomCode = async (length = 8): Promise<string> => {
   }
 
   return result.slice(0, length).padStart(length, "0");
+};
+
+export const generateAccessToken = (userId: string) => {
+  return sign({ sub: userId }, appConfig.token.accessToken.secret, {
+    expiresIn: "30m",
+  });
+};
+
+export const generateRefreshToken = (userId: string) => {
+  return sign({ sub: userId }, appConfig.token.refreshToken.secret, {
+    expiresIn: "7d",
+  });
 };

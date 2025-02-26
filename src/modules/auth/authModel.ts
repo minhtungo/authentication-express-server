@@ -12,3 +12,9 @@ export const VerifyEmailSchema = z.object({
 export const ForgotPasswordSchema = z.object({
   email: z.string().email(),
 });
+
+export const SignInSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+  code: z.string().optional(),
+});

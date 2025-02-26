@@ -20,4 +20,10 @@ export const env = cleanEnv(process.env, {
   EMAIL_SERVER_USER: str(),
   EMAIL_SERVER_PASSWORD: str(),
   EMAIL_FROM: str(),
+  ACCESS_TOKEN_SECRET: str(),
+  REFRESH_TOKEN_SECRET: str(),
+  ACCESS_TOKEN_EXPIRES_IN: str(),
+  REFRESH_TOKEN_EXPIRES_IN: str(),
+  ACCESS_TOKEN_COOKIE_NAME: str(),
+  REFRESH_TOKEN_COOKIE_NAME: str(),
 });

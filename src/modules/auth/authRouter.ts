@@ -3,7 +3,7 @@ import express, { type Router } from "express";
 import { z } from "zod";
 
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
-import { ForgotPasswordSchema, SignUpSchema, VerifyEmailSchema } from "@/modules/auth/authModel";
+import { ForgotPasswordSchema, SignInSchema, SignUpSchema, VerifyEmailSchema } from "@/modules/auth/authModel";
 
 import { validateRequest } from "@/utils/httpHandlers";
 import { authController } from "./authController";
@@ -28,6 +28,30 @@ authRegistry.registerPath({
 });
 
 authRouter.post("/signup", validateRequest(SignUpSchema), authController.signUp);
+
+authRegistry.registerPath({
+  method: "post",
+  path: "/auth/signin",
+  tags: ["Auth"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: SignInSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(
+    z.object({
+      accessToken: z.string(),
+      userId: z.string(),
+    }),
+    "Success",
+  ),
+});
+
+authRouter.post("/signin", validateRequest(z.object({ body: SignInSchema })), authController.signIn);
 
 authRegistry.registerPath({
   method: "post",
