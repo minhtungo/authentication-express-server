@@ -92,28 +92,9 @@ export class AuthService {
       const userSettings = await this.authRepository.getUserSettingsByUserId(user.id);
 
       if (userSettings?.isTwoFactorEnabled) {
-        if (code) {
-          const twoFactorToken = await this.authRepository.getTwoFactorTokenByEmail(email);
-
-          if (!twoFactorToken || twoFactorToken.token !== code) {
-            return ServiceResponse.failure("Invalid two-factor code", null, StatusCodes.UNAUTHORIZED);
-          }
-          if (new Date(twoFactorToken.expires) < new Date()) {
-            return ServiceResponse.failure("Code expired", null, StatusCodes.UNAUTHORIZED);
-          }
-
-          await createTransaction(async (trx) => {
-            await this.authRepository.deleteTwoFactorTokenByToken(twoFactorToken.token, trx);
-            await this.authRepository.createTwoFactorConfirmation(user.id!, trx);
-          });
-        } else {
-          const twoFactorConfirmation = await this.authRepository.getTwoFactorConfirmationByUserId(user.id!);
-
-          if (!twoFactorConfirmation) {
-            return ServiceResponse.failure("Invalid two-factor code", null, StatusCodes.UNAUTHORIZED);
-          }
-
-          await this.authRepository.deleteTwoFactorConfirmation(twoFactorConfirmation.id!);
+        const isValidTwoFactor = await this.validateTwoFactorCode(user.id, email, code);
+        if (!isValidTwoFactor) {
+          return ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED);
         }
       }
 
@@ -129,6 +110,30 @@ export class AuthService {
       logger.error(errorMessage);
       return ServiceResponse.failure("An error occurred while signing in.", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private async validateTwoFactorCode(userId: string, email: string, code?: string): Promise<boolean> {
+    if (!code) {
+      const twoFactorConfirmation = await this.authRepository.getTwoFactorConfirmationByUserId(userId);
+      if (!twoFactorConfirmation) {
+        return false;
+      }
+      await this.authRepository.deleteTwoFactorConfirmation(twoFactorConfirmation.id!);
+      return true;
+    }
+
+    const twoFactorToken = await this.authRepository.getTwoFactorTokenByEmail(email);
+
+    if (!twoFactorToken || twoFactorToken.token !== code || new Date(twoFactorToken.expires) < new Date()) {
+      return false;
+    }
+
+    await createTransaction(async (trx) => {
+      await this.authRepository.deleteTwoFactorTokenByToken(twoFactorToken.token, trx);
+      await this.authRepository.createTwoFactorConfirmation(userId, trx);
+    });
+
+    return true;
   }
 
   async verifyEmail(token: string): Promise<ServiceResponse> {

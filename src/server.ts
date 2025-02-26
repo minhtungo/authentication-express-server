@@ -11,6 +11,8 @@ import requestLogger from "@/middlewares/requestLogger";
 import { authRouter } from "@/modules/auth/authRouter";
 import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
 import passport from "passport";
+import "@/services/strategies/google";
+import "@/services/strategies/jwt";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
