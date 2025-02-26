@@ -10,7 +10,6 @@ import rateLimiter from "@/middlewares/rateLimiter";
 import requestLogger from "@/middlewares/requestLogger";
 import { authRouter } from "@/modules/auth/authRouter";
 import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
-import { userRouter } from "@/modules/user/userRouter";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
@@ -30,7 +29,6 @@ app.use(requestLogger);
 
 // Routes
 app.use("/health-check", healthCheckRouter);
-app.use("/users", userRouter);
 app.use("/auth", authRouter);
 
 // Swagger UI

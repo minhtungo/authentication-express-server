@@ -40,6 +40,12 @@ class AuthController {
     const serviceResponse = await authService.forgotPassword(email);
     return handleServiceResponse(serviceResponse, res);
   };
+
+  public resetPassword: RequestHandler = async (req: Request, res: Response) => {
+    const { token, password } = req.body;
+    const serviceResponse = await authService.resetPassword(token, password);
+    return handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const authController = new AuthController();
