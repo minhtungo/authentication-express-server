@@ -15,4 +15,9 @@ export const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
   GOOGLE_CALLBACK_URL: str(),
+  EMAIL_SERVER_HOST: str(),
+  EMAIL_SERVER_PORT: num(),
+  EMAIL_SERVER_USER: str(),
+  EMAIL_SERVER_PASSWORD: str(),
+  EMAIL_FROM: str(),
 });
