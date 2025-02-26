@@ -1,13 +1,15 @@
 import { appConfig } from "@/config/appConfig";
 import { db } from "@/db";
 import {
+  type InsertAccount,
+  accounts,
   resetPasswordTokens,
   twoFactorConfirmations,
   twoFactorTokens,
   userSettings,
   verificationTokens,
 } from "@/db/schemas";
-import { type User, users } from "@/db/schemas/users";
+import { type InsertUser, type User, users } from "@/db/schemas/users";
 import { hashPassword } from "@/utils/password";
 import { generateToken } from "@/utils/token";
 import { eq } from "drizzle-orm";
@@ -51,6 +53,14 @@ export class AuthRepository {
     });
 
     return userSetting;
+  }
+
+  async getAccountByUserId(userId: string) {
+    const account = await db.query.accounts.findFirst({
+      where: eq(accounts.userId, userId),
+    });
+
+    return account;
   }
 
   async deleteVerificationTokenByToken(token: string, trx: typeof db = db) {
@@ -135,25 +145,24 @@ export class AuthRepository {
     return twoFactorConfirmation;
   }
 
-  async createUser(
-    {
-      email,
-      password: plainPassword,
-    }: {
-      email: string;
-      password: string;
-    },
-    trx: typeof db = db,
-  ): Promise<User> {
-    const password = plainPassword ? await hashPassword(plainPassword) : undefined;
+  async createUser(user: InsertUser, trx: typeof db = db): Promise<User> {
+    const { password, ...data } = user;
+    const hashedPassword = password ? await hashPassword(password) : undefined;
 
-    const [newUser] = await trx.insert(users).values({ email, password, name: email }).returning();
+    const [newUser] = await trx
+      .insert(users)
+      .values({ ...data, password: hashedPassword })
+      .returning();
 
     await trx.insert(userSettings).values({
       userId: newUser.id,
     });
 
     return newUser;
+  }
+
+  async createAccount(account: InsertAccount, trx: typeof db = db) {
+    await trx.insert(accounts).values(account);
   }
 
   async updateUserEmailVerified(userId: string, trx: typeof db = db) {

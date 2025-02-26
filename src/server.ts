@@ -10,6 +10,7 @@ import rateLimiter from "@/middlewares/rateLimiter";
 import requestLogger from "@/middlewares/requestLogger";
 import { authRouter } from "@/modules/auth/authRouter";
 import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
+import passport from "passport";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
@@ -21,6 +22,7 @@ app.set("trust proxy", true);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: env.APP_ORIGIN, credentials: true }));
+app.use(passport.initialize());
 app.use(helmet());
 app.use(rateLimiter);
 

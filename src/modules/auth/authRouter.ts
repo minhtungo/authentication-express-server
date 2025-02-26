@@ -11,7 +11,11 @@ import {
   VerifyEmailSchema,
 } from "@/modules/auth/authModel";
 
+import { appConfig } from "@/config/appConfig";
+import { env } from "@/config/env";
 import { validateRequest } from "@/utils/httpHandlers";
+import { generateRefreshToken } from "@/utils/token";
+import passport from "passport";
 import { authController } from "./authController";
 
 export const authRegistry = new OpenAPIRegistry();
@@ -120,3 +124,44 @@ authRouter.post(
   validateRequest(z.object({ body: ResetPasswordSchema })),
   authController.resetPassword,
 );
+
+authRegistry.registerPath({
+  method: "get",
+  path: "/auth/google",
+  tags: ["Auth"],
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+authRouter.get(
+  "/google",
+  passport.authenticate("google", {
+    session: false,
+  }),
+);
+
+authRegistry.registerPath({
+  method: "get",
+  path: "/auth/google/callback",
+  tags: ["Auth"],
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+authRouter.get("/google/callback", (req, res, next) => {
+  passport.authenticate("google", { session: false }, async (error: any, user: Express.User | false) => {
+    if (error) {
+      return res.redirect(`${env.APP_ORIGIN}/sign-in?error=${encodeURIComponent("Authentication failed")}`);
+    }
+    if (!user) {
+      return res.redirect(`${env.APP_ORIGIN}/sign-in?error=${encodeURIComponent("Authentication failed")}`);
+    }
+    const refreshToken = await generateRefreshToken(user.id);
+    res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
+      httpOnly: env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
+      expires: new Date(Date.now() + appConfig.token.refreshToken.expiresIn),
+      sameSite: "lax",
+      path: "/",
+    });
+    res.redirect(`${env.APP_ORIGIN}/`);
+  })(req, res, next);
+});
