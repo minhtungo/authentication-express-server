@@ -1,4 +1,5 @@
 import { appConfig } from "@/config/appConfig";
+import { env } from "@/config/env";
 import { authService } from "@/modules/auth/authService";
 import { handleServiceResponse } from "@/utils/httpHandlers";
 import { generateRefreshToken } from "@/utils/token";
@@ -27,6 +28,11 @@ class AuthController {
       });
     }
     return handleServiceResponse(serviceResponse, res);
+  };
+
+  public signOut: RequestHandler = async (req: Request, res: Response) => {
+    res.clearCookie(appConfig.token.refreshToken.cookieName);
+    res.redirect(`${env.APP_ORIGIN}`);
   };
 
   public verifyEmail: RequestHandler = async (req: Request, res: Response) => {

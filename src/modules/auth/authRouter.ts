@@ -23,7 +23,7 @@ export const authRouter: Router = express.Router();
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/signup",
+  path: "/auth/sign-up",
   tags: ["Auth"],
   request: {
     body: {
@@ -37,11 +37,11 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.post("/signup", validateRequest(SignUpSchema), authController.signUp);
+authRouter.post("/sign-up", validateRequest(SignUpSchema), authController.signUp);
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/signin",
+  path: "/auth/sign-in",
   tags: ["Auth"],
   request: {
     body: {
@@ -61,7 +61,7 @@ authRegistry.registerPath({
   ),
 });
 
-authRouter.post("/signin", validateRequest(z.object({ body: SignInSchema })), authController.signIn);
+authRouter.post("/sign-in", validateRequest(z.object({ body: SignInSchema })), authController.signIn);
 
 authRegistry.registerPath({
   method: "post",
@@ -165,3 +165,12 @@ authRouter.get("/google/callback", (req, res, next) => {
     res.redirect(`${env.APP_ORIGIN}/`);
   })(req, res, next);
 });
+
+authRegistry.registerPath({
+  method: "post",
+  path: "/auth/sign-out",
+  tags: ["Auth"],
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+authRouter.post("/sign-out", authController.signOut);
