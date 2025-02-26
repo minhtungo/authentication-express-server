@@ -165,3 +165,5 @@ export class AuthRepository {
     await trx.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
   }
 }
+
+export const authRepository = new AuthRepository();

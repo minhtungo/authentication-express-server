@@ -115,7 +115,11 @@ export class AuthService {
         }
       }
 
-      const accessToken = generateAccessToken(user.id);
+      const accessToken = generateAccessToken({
+        sub: user.id,
+        email: user.email,
+        userId: user.id,
+      });
 
       return ServiceResponse.success("Signed in successfully", { accessToken, userId: user.id }, StatusCodes.OK);
     } catch (ex) {

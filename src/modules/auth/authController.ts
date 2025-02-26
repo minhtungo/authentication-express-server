@@ -16,7 +16,7 @@ class AuthController {
     const serviceResponse = await authService.signIn(email, password, code);
 
     if (serviceResponse.success && serviceResponse.data) {
-      const refreshToken = generateRefreshToken(serviceResponse.data.userId);
+      const refreshToken = generateRefreshToken({ sub: serviceResponse.data.userId });
 
       res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
         httpOnly: true,
