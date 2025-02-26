@@ -1,11 +1,12 @@
+import { commonValidations } from "@/utils/commonValidation";
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 
 extendZodWithOpenApi(z);
 
 export const SignUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
+  email: commonValidations.email,
+  password: commonValidations.password,
 });
 
 export const VerifyEmailSchema = z.object({
@@ -13,16 +14,16 @@ export const VerifyEmailSchema = z.object({
 });
 
 export const ForgotPasswordSchema = z.object({
-  email: z.string().email(),
+  email: commonValidations.email,
 });
 
 export const SignInSchema = z.object({
-  email: z.string().email(),
+  email: commonValidations.email,
   password: z.string(),
   code: z.string().optional(),
 });
 
 export const ResetPasswordSchema = z.object({
   token: z.string(),
-  password: z.string().min(8),
+  password: commonValidations.password,
 });

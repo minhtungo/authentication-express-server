@@ -1,4 +1,19 @@
 services:
+  # app:
+  #   build: .
+  #   restart: unless-stopped
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     mailhog:
+  #       condition: service_started
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - app_network
+
   db:
     image: postgres:latest
     environment:
@@ -13,13 +28,13 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
-      retries: 5 
+      retries: 5
+    networks:
+      - app_network
 
   mailhog:
     image: mailhog/mailhog:latest
     restart: always
-    env_file:
-      - .env
     ports:
       - 1025:1025
       - 8025:8025
@@ -27,7 +42,6 @@ services:
       - ./docker-data/mailhog:/maildir
     networks:
       - app_network
-
 
 networks:
   app_network:
