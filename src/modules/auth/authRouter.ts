@@ -37,7 +37,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.post("/sign-up", validateRequest(SignUpSchema), authController.signUp);
+authRouter.post("/sign-up", validateRequest(z.object({ body: SignUpSchema })), authController.signUp);
 
 authRegistry.registerPath({
   method: "post",

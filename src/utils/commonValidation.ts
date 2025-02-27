@@ -18,7 +18,7 @@ export const commonValidations = {
     .string({
       required_error: "Password is required",
     })
-    .min(12, "Password must be at least 12 characters long")
+    .min(8, "Password must be at least 8 characters long")
     .max(64, "Password must be at most 64 characters")
     .regex(passwordRegex, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
 };
