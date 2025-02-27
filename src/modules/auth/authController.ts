@@ -14,11 +14,9 @@ class AuthController {
 
   public signIn: RequestHandler = async (req: Request, res: Response) => {
     const { email, password, code } = req.body;
-    const serviceResponse = await authService.signIn(email, password, code);
+    const { refreshToken, serviceResponse } = await authService.signIn(email, password, code);
 
-    if (serviceResponse.success && serviceResponse.data) {
-      const refreshToken = generateRefreshToken({ sub: serviceResponse.data.userId });
-
+    if (serviceResponse.success && refreshToken) {
       res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
         httpOnly: env.NODE_ENV === "production",
         secure: env.NODE_ENV === "production",
@@ -56,10 +54,9 @@ class AuthController {
   public refreshToken: RequestHandler = async (req: Request, res: Response) => {
     const refreshToken = req.cookies[appConfig.token.refreshToken.cookieName];
 
-    const serviceResponse = await authService.refreshToken(refreshToken);
+    const { refreshToken: newRefreshToken, serviceResponse } = await authService.refreshToken(refreshToken);
 
-    if (serviceResponse.success && serviceResponse.data) {
-      const newRefreshToken = generateRefreshToken({ sub: serviceResponse.data.userId });
+    if (serviceResponse.success && newRefreshToken) {
       res.cookie(appConfig.token.refreshToken.cookieName, newRefreshToken, {
         httpOnly: env.NODE_ENV === "production",
         secure: env.NODE_ENV === "production",

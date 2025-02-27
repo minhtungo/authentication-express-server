@@ -1,14 +1,12 @@
 import { StatusCodes } from "http-status-codes";
 
-import { appConfig } from "@/config/appConfig";
 import { AuthRepository } from "@/modules/auth/authRepository";
 import { logger } from "@/server";
 import { emailService } from "@/services/email/emailService";
 import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
-import { generateAccessToken } from "@/utils/token";
+import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
-import { verify } from "jsonwebtoken";
 
 export class AuthService {
   private authRepository: AuthRepository;
@@ -75,18 +73,27 @@ export class AuthService {
     email: string,
     password: string,
     code?: string,
-  ): Promise<ServiceResponse<{ accessToken: string; userId: string } | null>> {
+  ): Promise<{
+    refreshToken: string;
+    serviceResponse: ServiceResponse<{ accessToken: string; userId: string } | null>;
+  }> {
     try {
       const user = await this.authRepository.getUserByEmail(email);
 
       if (!user || !user.emailVerified || !user.id || !user.password) {
-        return ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED);
+        return {
+          refreshToken: "",
+          serviceResponse: ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED),
+        };
       }
 
       const isPasswordValid = await verifyPassword(user.password, password);
 
       if (!isPasswordValid) {
-        return ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED);
+        return {
+          refreshToken: "",
+          serviceResponse: ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED),
+        };
       }
 
       const userSettings = await this.authRepository.getUserSettingsByUserId(user.id);
@@ -94,7 +101,10 @@ export class AuthService {
       if (userSettings?.isTwoFactorEnabled) {
         const isValidTwoFactor = await this.validateTwoFactorCode(user.id, email, code);
         if (!isValidTwoFactor) {
-          return ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED);
+          return {
+            refreshToken: "",
+            serviceResponse: ServiceResponse.failure("Invalid credentials", null, StatusCodes.UNAUTHORIZED),
+          };
         }
       }
 
@@ -104,11 +114,27 @@ export class AuthService {
         userId: user.id,
       });
 
-      return ServiceResponse.success("Signed in successfully", { accessToken, userId: user.id }, StatusCodes.OK);
+      const { token: refreshToken } = await this.authRepository.createRefreshToken(user.id);
+
+      return {
+        refreshToken,
+        serviceResponse: ServiceResponse.success(
+          "Signed in successfully",
+          { accessToken, userId: user.id },
+          StatusCodes.OK,
+        ),
+      };
     } catch (ex) {
       const errorMessage = `Error signing in: ${(ex as Error).message}`;
       logger.error(errorMessage);
-      return ServiceResponse.failure("An error occurred while signing in.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+      return {
+        refreshToken: "",
+        serviceResponse: ServiceResponse.failure(
+          "An error occurred while signing in.",
+          null,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        ),
+      };
     }
   }
 
@@ -218,22 +244,36 @@ export class AuthService {
     }
   }
 
-  async refreshToken(refreshToken: string): Promise<ServiceResponse<{ accessToken: string; userId: string } | null>> {
+  async refreshToken(refreshToken: string): Promise<{
+    refreshToken: string;
+    serviceResponse: ServiceResponse<{ accessToken: string; userId: string } | null>;
+  }> {
     if (!refreshToken) {
-      return ServiceResponse.failure("Refresh token not found", null, StatusCodes.UNAUTHORIZED);
+      return {
+        refreshToken: "",
+        serviceResponse: ServiceResponse.failure("Refresh token not found", null, StatusCodes.UNAUTHORIZED),
+      };
     }
     try {
-      const decodedToken = verify(refreshToken, appConfig.token.refreshToken.secret);
+      const savedRefreshToken = await this.authRepository.getRefreshTokenByToken(refreshToken);
 
-      if (!decodedToken) {
-        return ServiceResponse.failure("Invalid refresh token", null, StatusCodes.UNAUTHORIZED);
+      if (!savedRefreshToken) {
+        return {
+          refreshToken: "",
+          serviceResponse: ServiceResponse.failure("Invalid token", null, StatusCodes.UNAUTHORIZED),
+        };
       }
 
-      const user = await this.authRepository.getUserById(decodedToken.sub as string);
+      const user = await this.authRepository.getUserById(savedRefreshToken.userId);
 
       if (!user) {
-        return ServiceResponse.failure("User not found", null, StatusCodes.UNAUTHORIZED);
+        return {
+          refreshToken: "",
+          serviceResponse: ServiceResponse.failure("User not found", null, StatusCodes.UNAUTHORIZED),
+        };
       }
+
+      await this.authRepository.deleteRefreshTokenByToken(savedRefreshToken.token);
 
       const accessToken = generateAccessToken({
         sub: user.id,
@@ -241,11 +281,19 @@ export class AuthService {
         userId: user.id,
       });
 
-      return ServiceResponse.success("Token refreshed", { accessToken, userId: user.id }, StatusCodes.OK);
+      const { token: newRefreshToken } = await this.authRepository.createRefreshToken(user.id);
+
+      return {
+        refreshToken: newRefreshToken,
+        serviceResponse: ServiceResponse.success("Token refreshed", { accessToken, userId: user.id }, StatusCodes.OK),
+      };
     } catch (ex) {
       const errorMessage = `Error refreshing token: ${(ex as Error).message}`;
       logger.error(errorMessage);
-      return ServiceResponse.failure("Invalid refresh token", null, StatusCodes.UNAUTHORIZED);
+      return {
+        refreshToken: "",
+        serviceResponse: ServiceResponse.failure("Invalid refresh token", null, StatusCodes.UNAUTHORIZED),
+      };
     }
   }
 }
