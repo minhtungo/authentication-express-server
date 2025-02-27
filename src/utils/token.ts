@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { appConfig } from "@/config/appConfig";
+import { env } from "@/config/env";
 import { sign } from "jsonwebtoken";
 
 export const generateToken = async (length = 32): Promise<string> => {
@@ -17,6 +18,8 @@ export type AccessTokenPayload = {
 export const generateAccessToken = (payload: AccessTokenPayload) => {
   return sign(payload, appConfig.token.accessToken.secret, {
     expiresIn: "30m",
+    audience: env.APP_ORIGIN,
+    issuer: env.BASE_URL,
   });
 };
 

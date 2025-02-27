@@ -280,6 +280,15 @@ export class AuthService {
         };
       }
 
+      if (new Date() > savedRefreshToken.expires) {
+        // Clean up the expired token
+        await this.authRepository.deleteRefreshTokenByToken(savedRefreshToken.token);
+        return {
+          refreshToken: "",
+          serviceResponse: ServiceResponse.failure("Refresh token has expired", null, StatusCodes.UNAUTHORIZED),
+        };
+      }
+
       const user = await this.authRepository.getUserById(savedRefreshToken.userId);
 
       if (!user) {

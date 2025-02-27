@@ -11,4 +11,13 @@ const rateLimiter = rateLimit({
   keyGenerator: (req: Request) => req.ip as string,
 });
 
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 attempts
+  skipSuccessfulRequests: true,
+  message: "Too many login attempts, please try again later",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 export default rateLimiter;
