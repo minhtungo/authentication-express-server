@@ -13,12 +13,12 @@ export const appConfig = {
     accessToken: {
       cookieName: env.ACCESS_TOKEN_COOKIE_NAME,
       secret: env.ACCESS_TOKEN_SECRET,
-      expiresIn: "30m",
+      expiresIn: 30 * 60 * 1000,
     },
     refreshToken: {
       cookieName: env.REFRESH_TOKEN_COOKIE_NAME,
       secret: env.REFRESH_TOKEN_SECRET,
-      expiresIn: "7d",
+      expiresIn: 7 * 24 * 60 * 60 * 1000,
     },
   },
 };

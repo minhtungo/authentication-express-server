@@ -24,6 +24,7 @@ class AuthController {
         sameSite: "lax",
       });
     }
+    console.log("serviceResponse", serviceResponse);
     return handleServiceResponse(serviceResponse, res);
   };
 
@@ -37,7 +38,9 @@ class AuthController {
 
   public verifyEmail: RequestHandler = async (req: Request, res: Response) => {
     const { token } = req.body;
+    console.log("verifyEmail", token);
     const serviceResponse = await authService.verifyEmail(token);
+    console.log("serviceResponse", serviceResponse);
     return handleServiceResponse(serviceResponse, res);
   };
 

@@ -79,7 +79,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.post("/verify-email", validateRequest(z.object({ body: VerifyEmailSchema })), authController.verifyEmail);
+authRouter.put("/verify-email", validateRequest(z.object({ body: VerifyEmailSchema })), authController.verifyEmail);
 
 authRegistry.registerPath({
   method: "post",
