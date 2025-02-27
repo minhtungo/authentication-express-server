@@ -2,7 +2,6 @@ import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
 import { authService } from "@/modules/auth/authService";
 import { handleServiceResponse } from "@/utils/httpHandlers";
-import { generateRefreshToken } from "@/utils/token";
 import type { Request, RequestHandler, Response } from "express";
 
 class AuthController {
@@ -29,6 +28,9 @@ class AuthController {
   };
 
   public signOut: RequestHandler = async (req: Request, res: Response) => {
+    const refreshToken = req.cookies[appConfig.token.refreshToken.cookieName];
+
+    await authService.signOut(refreshToken);
     res.clearCookie(appConfig.token.refreshToken.cookieName);
     res.redirect(`${env.APP_ORIGIN}`);
   };

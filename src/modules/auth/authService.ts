@@ -5,7 +5,7 @@ import { logger } from "@/server";
 import { emailService } from "@/services/email/emailService";
 import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
-import { generateAccessToken, generateRefreshToken } from "@/utils/token";
+import { generateAccessToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
 
 export class AuthService {
@@ -138,6 +138,17 @@ export class AuthService {
     }
   }
 
+  async signOut(refreshToken: string): Promise<ServiceResponse> {
+    try {
+      await this.authRepository.deleteRefreshTokenByToken(refreshToken);
+      return ServiceResponse.success("Signed out successfully", null, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error signing out: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure("An error occurred while signing out.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   private async validateTwoFactorCode(userId: string, email: string, code?: string): Promise<boolean> {
     if (!code) {
       const twoFactorConfirmation = await this.authRepository.getTwoFactorConfirmationByUserId(userId);
@@ -160,6 +171,11 @@ export class AuthService {
     });
 
     return true;
+  }
+
+  async createRefreshToken(userId: string): Promise<{ token: string }> {
+    const { token } = await this.authRepository.createRefreshToken(userId);
+    return { token };
   }
 
   async verifyEmail(token: string): Promise<ServiceResponse> {
