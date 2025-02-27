@@ -12,8 +12,8 @@ const rateLimiter = rateLimit({
 });
 
 export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   skipSuccessfulRequests: true,
   message: "Too many login attempts, please try again later",
   standardHeaders: true,
