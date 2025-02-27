@@ -1,3 +1,11 @@
+## Features
+- Email/Password authentication
+- Google OAuth integration
+- JWT-based authentication with refresh tokens
+- Email verification
+- Password reset
+- Two-factor authentication support
+
 ## 🚀 Tech Stack
 
 - **[Node.js](https://nodejs.org/)** 
@@ -23,6 +31,19 @@
 - **[Biome](https://biomejs.dev/)** - Linter and formatter
 - **[pino](https://getpino.io/)** - Logging
 - **[Husky](https://typicode.github.io/husky/)** - Git hooks
+
+## Structure 
+
+src/
+├── config/ # Configuration files and environment setup
+├── db/ # Database schemas and migrations
+├── docs/ # OpenAPI/Swagger documentation
+├── middlewares/ # Express middlewares
+├── modules/ # Feature modules (auth, health-check, etc.)
+├── services/ # Business logic and external services
+│ ├── email/ # Email service and templates
+│ └── strategies/ # Passport authentication strategies
+└── utils/ # Utility functions and helpers
 
 ## Credits
 [express-typescript-boilerplate](https://github.com/edwinhern/express-typescript-2024)
