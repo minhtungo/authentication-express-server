@@ -10,6 +10,7 @@
 
 - **[Node.js](https://nodejs.org/)** 
 - **[Express.js](https://expressjs.com/)**
+- **[Redis](https://redis.io/)**
 
 - **[TypeScript](https://www.typescriptlang.org/)** 
 - **[PostgreSQL](https://www.postgresql.org/)** 
@@ -41,8 +42,6 @@ src/
 ├── middlewares/ # Express middlewares
 ├── modules/ # Feature modules (auth, health-check, etc.)
 ├── services/ # Business logic and external services
-│ ├── email/ # Email service and templates
-│ └── strategies/ # Passport authentication strategies
 └── utils/ # Utility functions and helpers
 
 ## Credits
