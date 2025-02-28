@@ -1,18 +1,13 @@
 import crypto from "node:crypto";
 import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
+import type { AccessTokenPayload, RefreshTokenPayload } from "@/types/token";
 import { sign } from "jsonwebtoken";
 
 export const generateToken = async (length = 32): Promise<string> => {
   const buffer = await crypto.randomBytes(Math.ceil(length * 0.75));
 
   return buffer.toString("base64url").slice(0, length);
-};
-
-export type AccessTokenPayload = {
-  sub: string;
-  email: string;
-  userId: string;
 };
 
 export const generateAccessToken = (payload: AccessTokenPayload) => {
@@ -23,25 +18,31 @@ export const generateAccessToken = (payload: AccessTokenPayload) => {
   });
 };
 
-export type RefreshTokenPayload = {
-  sub: string;
-};
-
-export const generateRefreshToken = async (): Promise<{
+export const generateRefreshToken = async (
+  userId: string,
+): Promise<{
   token: string;
-  hashedToken: string;
   expiresAt: Date;
+  sessionId: string;
 }> => {
-  const token = await generateToken(64);
-  const hashedToken = hashToken(token, appConfig.token.refreshToken.secret);
+  const sessionId = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + appConfig.token.refreshToken.expiresIn);
 
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
+  const token = sign(
+    {
+      sub: userId,
+      sessionId,
+    },
+    appConfig.token.refreshToken.secret,
+    {
+      expiresIn: appConfig.token.refreshToken.expiresIn,
+    },
+  );
 
   return {
     token,
-    hashedToken,
     expiresAt,
+    sessionId,
   };
 };
 

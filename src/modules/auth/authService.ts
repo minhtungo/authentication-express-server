@@ -1,12 +1,16 @@
 import { StatusCodes } from "http-status-codes";
 
+import { appConfig } from "@/config/appConfig";
 import { AuthRepository } from "@/modules/auth/authRepository";
 import { emailService } from "@/services/email/emailService";
+import { addTokenToBlacklist, checkTokenBlacklist } from "@/services/redis/tokenBlacklist";
+import type { RefreshTokenPayload } from "@/types/token";
 import { logger } from "@/utils/logger";
 import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
-import { generateAccessToken } from "@/utils/token";
+import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
+import { verify } from "jsonwebtoken";
 
 export class AuthService {
   private authRepository: AuthRepository;
@@ -108,13 +112,14 @@ export class AuthService {
         }
       }
 
+      const { token: refreshToken, sessionId } = await generateRefreshToken(user.id);
+
       const accessToken = generateAccessToken({
         sub: user.id,
         email: user.email,
         userId: user.id,
+        sessionId,
       });
-
-      const { token: refreshToken } = await this.authRepository.createRefreshToken(user.id);
 
       return {
         refreshToken,
@@ -140,7 +145,9 @@ export class AuthService {
 
   async signOut(refreshToken: string): Promise<ServiceResponse> {
     try {
-      await this.authRepository.deleteRefreshTokenByToken(refreshToken);
+      const payload = verify(refreshToken, appConfig.token.refreshToken.secret) as RefreshTokenPayload;
+
+      await addTokenToBlacklist(payload.sessionId, appConfig.token.refreshToken.expiresIn);
       return ServiceResponse.success("Signed out successfully", null, StatusCodes.OK);
     } catch (ex) {
       const errorMessage = `Error signing out: ${(ex as Error).message}`;
@@ -171,11 +178,6 @@ export class AuthService {
     });
 
     return true;
-  }
-
-  async createRefreshToken(userId: string): Promise<{ token: string }> {
-    const { token } = await this.authRepository.createRefreshToken(userId);
-    return { token };
   }
 
   async verifyEmail(token: string): Promise<ServiceResponse> {
@@ -271,25 +273,17 @@ export class AuthService {
       };
     }
     try {
-      const savedRefreshToken = await this.authRepository.getRefreshTokenByToken(refreshToken);
+      const payload = verify(refreshToken, appConfig.token.refreshToken.secret) as RefreshTokenPayload;
 
-      if (!savedRefreshToken) {
+      const isBlacklisted = await checkTokenBlacklist(payload.sessionId);
+      if (isBlacklisted) {
         return {
           refreshToken: "",
-          serviceResponse: ServiceResponse.failure("Invalid token", null, StatusCodes.UNAUTHORIZED),
+          serviceResponse: ServiceResponse.failure("Token has been revoked", null, StatusCodes.UNAUTHORIZED),
         };
       }
 
-      if (new Date() > savedRefreshToken.expires) {
-        // Clean up the expired token
-        await this.authRepository.deleteRefreshTokenByToken(savedRefreshToken.token);
-        return {
-          refreshToken: "",
-          serviceResponse: ServiceResponse.failure("Refresh token has expired", null, StatusCodes.UNAUTHORIZED),
-        };
-      }
-
-      const user = await this.authRepository.getUserById(savedRefreshToken.userId);
+      const user = await this.authRepository.getUserById(payload.sub);
 
       if (!user) {
         return {
@@ -297,16 +291,17 @@ export class AuthService {
           serviceResponse: ServiceResponse.failure("User not found", null, StatusCodes.UNAUTHORIZED),
         };
       }
-
-      await this.authRepository.deleteRefreshTokenByToken(savedRefreshToken.token);
+      const { token: newRefreshToken, sessionId } = await generateRefreshToken(user.id);
 
       const accessToken = generateAccessToken({
         sub: user.id,
         email: user.email,
         userId: user.id,
+        sessionId,
       });
 
-      const { token: newRefreshToken } = await this.authRepository.createRefreshToken(user.id);
+      // Blacklist the old session
+      await addTokenToBlacklist(payload.sessionId, appConfig.token.refreshToken.expiresIn);
 
       return {
         refreshToken: newRefreshToken,

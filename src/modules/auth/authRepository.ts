@@ -9,11 +9,10 @@ import {
   userSettings,
   verificationTokens,
 } from "@/db/schemas";
-import { refreshTokens } from "@/db/schemas/refreshTokens";
 import { type InsertUser, type User, users } from "@/db/schemas/users";
 import { hashPassword } from "@/utils/password";
-import { generateRefreshToken, generateToken, hashToken } from "@/utils/token";
-import { and, eq } from "drizzle-orm";
+import { generateToken } from "@/utils/token";
+import { eq } from "drizzle-orm";
 
 export class AuthRepository {
   async getUserByEmail(email: string) {
@@ -114,43 +113,6 @@ export class AuthRepository {
     await trx.insert(twoFactorConfirmations).values({
       userId,
     });
-  }
-
-  async createRefreshToken(userId: string, trx: typeof db = db) {
-    const { token, hashedToken, expiresAt } = await generateRefreshToken();
-
-    await trx.insert(refreshTokens).values({
-      userId: userId,
-      token: hashedToken,
-      expires: expiresAt,
-    });
-
-    return {
-      token: token,
-      hashedToken: hashedToken,
-    };
-  }
-
-  async deleteRefreshTokenByToken(token: string, trx: typeof db = db) {
-    await trx.delete(refreshTokens).where(eq(refreshTokens.token, token));
-  }
-
-  async getRefreshTokenByToken(token: string) {
-    const hashedToken = hashToken(token, appConfig.token.refreshToken.secret);
-    const refreshToken = await db.query.refreshTokens.findFirst({
-      where: eq(refreshTokens.token, hashedToken),
-    });
-
-    return refreshToken;
-  }
-
-  async deleteAllRefreshTokensByUserId(userId: string, trx: typeof db = db) {
-    await trx.delete(refreshTokens).where(eq(refreshTokens.userId, userId));
-  }
-
-  async deleteRefreshTokenByUserId(userId: string, token: string, trx: typeof db = db) {
-    const hashedToken = hashToken(token, appConfig.token.refreshToken.secret);
-    await trx.delete(refreshTokens).where(and(eq(refreshTokens.userId, userId), eq(refreshTokens.token, hashedToken)));
   }
 
   async createResetPasswordToken(userId: string, trx: typeof db = db) {

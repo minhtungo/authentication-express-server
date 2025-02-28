@@ -13,9 +13,8 @@ import {
 
 import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
-import { authService } from "@/modules/auth/authService";
 import { validateRequest } from "@/utils/httpHandlers";
-import { generateAccessToken } from "@/utils/token";
+import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 import passport from "passport";
 import { authController } from "./authController";
 
@@ -156,8 +155,9 @@ authRouter.get("/google/callback", (req, res, next) => {
       return res.redirect(`${env.APP_ORIGIN}/sign-in?error=${encodeURIComponent("Authentication failed")}`);
     }
 
-    const { token: refreshToken } = await authService.createRefreshToken(user.id);
-    const accessToken = await generateAccessToken({ sub: user.id, email: user.email, userId: user.id });
+    const { token: refreshToken, sessionId } = await generateRefreshToken(user.id);
+
+    const accessToken = await generateAccessToken({ sub: user.id, email: user.email, userId: user.id, sessionId });
 
     res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
       httpOnly: env.NODE_ENV === "production",
