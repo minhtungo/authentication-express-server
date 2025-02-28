@@ -71,6 +71,10 @@ class AuthController {
       });
     }
 
+    if (!serviceResponse.success) {
+      res.clearCookie(appConfig.token.refreshToken.cookieName);
+    }
+
     console.log("refreshToken serviceResponse", {
       refreshToken: newRefreshToken,
       serviceResponse,

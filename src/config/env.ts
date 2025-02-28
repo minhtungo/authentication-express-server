@@ -13,6 +13,7 @@ export const env = cleanEnv(process.env, {
   COMMON_RATE_LIMIT_WINDOW_MS: num({ devDefault: testOnly(1000) }),
   DATABASE_URL: str(),
   REDIS_URL: str(),
+  REDIS_PORT: port(),
   GOOGLE_CLIENT_ID: str(),
   GOOGLE_CLIENT_SECRET: str(),
   GOOGLE_CALLBACK_URL: str(),
