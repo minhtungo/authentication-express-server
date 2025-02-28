@@ -14,9 +14,15 @@ import cookieParser from "cookie-parser";
 import passport from "passport";
 import "@/services/strategies/google";
 import "@/services/strategies/jwt";
+import { connectRedis } from "@/utils/redis";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
+
+// Connect to Redis
+(async () => {
+  await connectRedis();
+})();
 
 // Set the application to trust the reverse proxy
 app.set("trust proxy", true);
