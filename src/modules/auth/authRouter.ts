@@ -15,6 +15,7 @@ import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
 import { authService } from "@/modules/auth/authService";
 import { validateRequest } from "@/utils/httpHandlers";
+import { generateAccessToken } from "@/utils/token";
 import passport from "passport";
 import { authController } from "./authController";
 
@@ -156,6 +157,7 @@ authRouter.get("/google/callback", (req, res, next) => {
     }
 
     const { token: refreshToken } = await authService.createRefreshToken(user.id);
+    const accessToken = await generateAccessToken({ sub: user.id, email: user.email, userId: user.id });
 
     res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
       httpOnly: env.NODE_ENV === "production",
@@ -164,7 +166,34 @@ authRouter.get("/google/callback", (req, res, next) => {
       sameSite: "lax",
       path: "/",
     });
-    res.redirect(`${env.APP_ORIGIN}/`);
+
+    const htmlWithEmbeddedJWT = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Authenticated</title>
+        </head>
+        <body>
+          Authenticated successfully.
+          <script type="text/javascript">
+            window.addEventListener("message", function(e) {
+              console.dir(e)
+              if (e.origin === "${env.APP_ORIGIN}" && e.data && e.data.info && e.data.info.complete) {
+                  window.close();
+              }
+            }, false);
+          
+            opener.postMessage({
+              command: "token-ready",
+              info: {
+                token: "${accessToken}",
+              },
+            }, "${env.APP_ORIGIN}");
+          </script>
+        </body>
+      </html>
+    `;
+    res.send(htmlWithEmbeddedJWT);
   })(req, res, next);
 });
 
