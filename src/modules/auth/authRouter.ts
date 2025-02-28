@@ -178,10 +178,10 @@ authRegistry.registerPath({
 authRouter.post("/sign-out", authController.signOut);
 
 authRegistry.registerPath({
-  method: "post",
+  method: "put",
   path: "/auth/refresh",
   tags: ["Auth"],
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.post("/refresh", authController.refreshToken);
+authRouter.put("/refresh", authController.refreshToken);

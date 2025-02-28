@@ -57,7 +57,7 @@ class AuthController {
   };
 
   public refreshToken: RequestHandler = async (req: Request, res: Response) => {
-    const refreshToken = req.cookies[appConfig.token.refreshToken.cookieName];
+    const refreshToken = req.cookies?.[appConfig.token.refreshToken.cookieName];
 
     const { refreshToken: newRefreshToken, serviceResponse } = await authService.refreshToken(refreshToken);
 
@@ -70,6 +70,11 @@ class AuthController {
         sameSite: "lax",
       });
     }
+
+    console.log("refreshToken serviceResponse", {
+      refreshToken: newRefreshToken,
+      serviceResponse,
+    });
     return handleServiceResponse(serviceResponse, res);
   };
 }
