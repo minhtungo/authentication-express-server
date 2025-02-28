@@ -1,8 +1,8 @@
 import { StatusCodes } from "http-status-codes";
 
 import { AuthRepository } from "@/modules/auth/authRepository";
-import { logger } from "@/server";
 import { emailService } from "@/services/email/emailService";
+import { logger } from "@/utils/logger";
 import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
 import { generateAccessToken } from "@/utils/token";

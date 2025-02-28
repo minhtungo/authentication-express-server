@@ -1,5 +1,5 @@
 import { env } from "@/config/env";
-import { logger } from "@/server";
+import { logger } from "@/utils/logger";
 import { createClient } from "redis";
 
 const redisClient = createClient({

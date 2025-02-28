@@ -1,7 +1,6 @@
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
-import { pino } from "pino";
 
 import { env } from "@/config/env";
 import { openAPIRouter } from "@/docs/openAPIRouter";
@@ -10,13 +9,12 @@ import rateLimiter from "@/middlewares/rateLimiter";
 import requestLogger from "@/middlewares/requestLogger";
 import { authRouter } from "@/modules/auth/authRouter";
 import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
-import cookieParser from "cookie-parser";
-import passport from "passport";
 import "@/services/strategies/google";
 import "@/services/strategies/jwt";
 import { connectRedis } from "@/utils/redis";
+import cookieParser from "cookie-parser";
+import passport from "passport";
 
-const logger = pino({ name: "server start" });
 const app: Express = express();
 
 // Connect to Redis
@@ -49,4 +47,4 @@ app.use(openAPIRouter);
 // Error handlers
 app.use(errorHandler());
 
-export { app, logger };
+export { app };

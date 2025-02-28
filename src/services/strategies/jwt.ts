@@ -1,6 +1,6 @@
 import { env } from "@/config/env";
 import { authRepository } from "@/modules/auth/authRepository";
-import { logger } from "@/server";
+import { logger } from "@/utils/logger";
 import type { AccessTokenPayload } from "@/utils/token";
 import passport from "passport";
 import { ExtractJwt, Strategy, type StrategyOptionsWithoutRequest } from "passport-jwt";

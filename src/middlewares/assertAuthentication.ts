@@ -1,5 +1,5 @@
-import { logger } from "@/server";
 import { handleServiceResponse } from "@/utils/httpHandlers";
+import { logger } from "@/utils/logger";
 import { ServiceResponse } from "@/utils/serviceResponse";
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";

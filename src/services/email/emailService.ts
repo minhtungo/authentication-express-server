@@ -1,8 +1,8 @@
 import { env } from "@/config/env";
 
-import { logger } from "@/server";
 import PasswordResetEmail from "@/services/email/templates/PasswordResetEmail";
 import VerificationEmail from "@/services/email/templates/VerificationEmail";
+import { logger } from "@/utils/logger";
 import { render } from "@react-email/components";
 import nodemailer from "nodemailer";
 
