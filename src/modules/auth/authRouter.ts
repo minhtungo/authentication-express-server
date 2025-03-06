@@ -11,11 +11,7 @@ import {
   VerifyEmailSchema,
 } from "@/modules/auth/authModel";
 
-import { appConfig } from "@/config/appConfig";
-import { env } from "@/config/env";
 import { validateRequest } from "@/utils/httpHandlers";
-import { generateAccessToken, generateRefreshToken } from "@/utils/token";
-import passport from "passport";
 import { authController } from "./authController";
 
 export const authRegistry = new OpenAPIRegistry();
@@ -132,12 +128,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.get(
-  "/google",
-  passport.authenticate("google", {
-    session: false,
-  }),
-);
+authRouter.get("/google", authController.handleOAuthSignIn);
 
 authRegistry.registerPath({
   method: "get",
@@ -146,56 +137,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.get("/google/callback", (req, res, next) => {
-  passport.authenticate("google", { session: false }, async (error: any, user: Express.User | false) => {
-    if (error) {
-      return res.redirect(`${env.APP_ORIGIN}/sign-in?error=${encodeURIComponent("Authentication failed")}`);
-    }
-    if (!user) {
-      return res.redirect(`${env.APP_ORIGIN}/sign-in?error=${encodeURIComponent("Authentication failed")}`);
-    }
-
-    const { token: refreshToken, sessionId } = await generateRefreshToken(user.id);
-
-    const accessToken = await generateAccessToken({ sub: user.id, email: user.email, userId: user.id, sessionId });
-
-    res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
-      httpOnly: env.NODE_ENV === "production",
-      secure: env.NODE_ENV === "production",
-      expires: new Date(Date.now() + appConfig.token.refreshToken.expiresIn),
-      sameSite: "lax",
-      path: "/",
-    });
-
-    const htmlWithEmbeddedJWT = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Authenticated</title>
-        </head>
-        <body>
-          Authenticated successfully.
-          <script type="text/javascript">
-            window.addEventListener("message", function(e) {
-              console.dir(e)
-              if (e.origin === "${env.APP_ORIGIN}" && e.data && e.data.info && e.data.info.complete) {
-                  window.close();
-              }
-            }, false);
-          
-            opener.postMessage({
-              command: "token-ready",
-              info: {
-                token: "${accessToken}",
-              },
-            }, "${env.APP_ORIGIN}");
-          </script>
-        </body>
-      </html>
-    `;
-    res.send(htmlWithEmbeddedJWT);
-  })(req, res, next);
-});
+authRouter.get("/google/callback", authController.handleOauthSignInCallback);
 
 authRegistry.registerPath({
   method: "post",

@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 
 import { appConfig } from "@/config/appConfig";
+import { env } from "@/config/env";
 import { AuthRepository } from "@/modules/auth/authRepository";
 import { emailService } from "@/services/email/emailService";
 import { addTokenToBlacklist, checkTokenBlacklist } from "@/services/redis/tokenBlacklist";
@@ -10,6 +11,7 @@ import { verifyPassword } from "@/utils/password";
 import { ServiceResponse } from "@/utils/serviceResponse";
 import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
+import type { Response } from "express";
 import { verify } from "jsonwebtoken";
 
 export class AuthService {
@@ -315,6 +317,16 @@ export class AuthService {
         serviceResponse: ServiceResponse.failure("Invalid refresh token", null, StatusCodes.UNAUTHORIZED),
       };
     }
+  }
+
+  setRefreshTokenToCookie(res: Response, refreshToken: string) {
+    res.cookie(appConfig.token.refreshToken.cookieName, refreshToken, {
+      httpOnly: env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
+      expires: new Date(Date.now() + appConfig.token.refreshToken.expiresIn),
+      path: "/",
+      sameSite: "lax",
+    });
   }
 }
 
