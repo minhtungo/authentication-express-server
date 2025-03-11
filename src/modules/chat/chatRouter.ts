@@ -11,6 +11,12 @@ export const chatRouter: Router = express.Router();
 
 const ChatMessageSchema = z.object({
   message: z.string().min(1),
+  history: z.array(
+    z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string().min(1),
+    }),
+  ),
 });
 
 chatRegistry.registerPath({

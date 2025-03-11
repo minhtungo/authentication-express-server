@@ -2,6 +2,12 @@ import { env } from "@/config/env";
 import { logger } from "@/utils/logger";
 import type { Response } from "express";
 import { OpenAI } from "openai";
+import type {
+  ChatCompletionAssistantMessageParam,
+  ChatCompletionMessageParam,
+  ChatCompletionUserMessageParam,
+} from "openai/resources";
+import type { Stream } from "openai/streaming";
 
 class ChatService {
   private openai: OpenAI;
@@ -12,29 +18,54 @@ class ChatService {
     });
   }
 
-  async streamCompletion(message: string, res: Response) {
+  async streamCompletion(
+    {
+      message,
+      history = [],
+    }: { message: string; history?: (ChatCompletionAssistantMessageParam | ChatCompletionUserMessageParam)[] },
+    res: Response,
+  ) {
+    let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> & {
+      _request_id?: string | null;
+    };
+
+    // Handle client disconnection
+    const onClose = () => {
+      stream?.controller?.abort();
+      logger.info("Client disconnected, aborting stream");
+    };
+
+    res.on("close", onClose);
+
     try {
-      const stream = await this.openai.chat.completions.create({
+      stream = await this.openai.chat.completions.create({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: message }],
+        messages: [...history, { role: "user", content: message }],
         stream: true,
       });
 
-      // Stream the chunks to the client
       for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || "";
+        if (res.writableEnded) return;
 
+        const content = chunk.choices[0]?.delta?.content || "";
+        console.log(content);
         if (content) {
-          res.write(`data: ${JSON.stringify({ content })}\n\n`);
+          res.write(`event: content\ndata: ${JSON.stringify({ content })}\n\n`);
         }
       }
 
-      // End the stream
-      res.write("data: [DONE]\n\n");
+      res.write("event: done\ndata: {}\n\n");
       res.end();
     } catch (error) {
       logger.error("Error streaming completion:", error);
-      throw error;
+
+      if (!res.writableEnded) {
+        const errorMessage = error instanceof Error ? error.message : "An error occurred during streaming";
+        res.write(`event: error\ndata: ${JSON.stringify({ message: errorMessage })}\n\n`);
+        res.end();
+      }
+    } finally {
+      res.removeListener("close", onClose);
     }
   }
 }
