@@ -28,4 +28,5 @@ export const env = cleanEnv(process.env, {
   REFRESH_TOKEN_EXPIRES_IN: str(),
   ACCESS_TOKEN_COOKIE_NAME: str(),
   REFRESH_TOKEN_COOKIE_NAME: str(),
+  OPENAI_API_KEY: str(),
 });

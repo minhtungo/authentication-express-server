@@ -11,6 +11,7 @@ import { authRouter } from "@/modules/auth/authRouter";
 import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
 import "@/services/strategies/google";
 import "@/services/strategies/jwt";
+import { chatRouter } from "@/modules/chat/chatRouter";
 import { connectRedis } from "@/utils/redis";
 import cookieParser from "cookie-parser";
 import passport from "passport";
@@ -40,6 +41,7 @@ app.use(requestLogger);
 // Routes
 app.use("/health-check", healthCheckRouter);
 app.use("/auth", authRouter);
+app.use("/chat", chatRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
