@@ -1,5 +1,4 @@
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
-import assertAuthentication from "@/middlewares/assertAuthentication";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";

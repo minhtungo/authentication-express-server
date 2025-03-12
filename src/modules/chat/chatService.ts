@@ -2,11 +2,7 @@ import { env } from "@/config/env";
 import { logger } from "@/utils/logger";
 import type { Response } from "express";
 import { OpenAI } from "openai";
-import type {
-  ChatCompletionAssistantMessageParam,
-  ChatCompletionMessageParam,
-  ChatCompletionUserMessageParam,
-} from "openai/resources";
+import type { ChatCompletionAssistantMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
 import type { Stream } from "openai/streaming";
 
 class ChatService {
