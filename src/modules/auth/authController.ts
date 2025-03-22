@@ -8,21 +8,19 @@ import passport from "passport";
 
 class AuthController {
   public signUp: RequestHandler = async (req: Request, res: Response) => {
-    console.log("signUp", req.body);
     const { email, password } = req.body;
     const serviceResponse = await authService.signUp(email, password);
-    return handleServiceResponse(serviceResponse, res);
+    handleServiceResponse(serviceResponse, res);
   };
 
   public signIn: RequestHandler = async (req: Request, res: Response) => {
-    console.log("signIn", req.body);
     const { email, password, code } = req.body;
     const { refreshToken, serviceResponse } = await authService.signIn(email, password, code);
 
     if (serviceResponse.success && refreshToken) {
       authService.setRefreshTokenToCookie(res, refreshToken);
     }
-    return handleServiceResponse(serviceResponse, res);
+    handleServiceResponse(serviceResponse, res);
   };
 
   public signOut: RequestHandler = async (req: Request, res: Response) => {
@@ -38,19 +36,19 @@ class AuthController {
     console.log("verifyEmail", token);
     const serviceResponse = await authService.verifyEmail(token);
     console.log("serviceResponse", serviceResponse);
-    return handleServiceResponse(serviceResponse, res);
+    handleServiceResponse(serviceResponse, res);
   };
 
   public forgotPassword: RequestHandler = async (req: Request, res: Response) => {
     const { email } = req.body;
     const serviceResponse = await authService.forgotPassword(email);
-    return handleServiceResponse(serviceResponse, res);
+    handleServiceResponse(serviceResponse, res);
   };
 
   public resetPassword: RequestHandler = async (req: Request, res: Response) => {
     const { token, password } = req.body;
     const serviceResponse = await authService.resetPassword(token, password);
-    return handleServiceResponse(serviceResponse, res);
+    handleServiceResponse(serviceResponse, res);
   };
 
   public refreshToken: RequestHandler = async (req: Request, res: Response) => {
@@ -70,7 +68,7 @@ class AuthController {
       refreshToken: newRefreshToken,
       serviceResponse,
     });
-    return handleServiceResponse(serviceResponse, res);
+    handleServiceResponse(serviceResponse, res);
   };
 
   public handleOAuthSignIn: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
