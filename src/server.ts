@@ -40,8 +40,8 @@ app.use(requestLogger);
 
 // Routes
 app.use("/health-check", healthCheckRouter);
-app.use("/auth", authRouter);
-app.use("/chat", chatRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/chat", chatRouter);
 
 // Swagger UI
 app.use(openAPIRouter);

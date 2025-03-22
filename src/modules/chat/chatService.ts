@@ -18,7 +18,12 @@ class ChatService {
     {
       message,
       history = [],
-    }: { message: string; history?: (ChatCompletionAssistantMessageParam | ChatCompletionUserMessageParam)[] },
+      attachment,
+    }: {
+      message: string;
+      history?: (ChatCompletionAssistantMessageParam | ChatCompletionUserMessageParam)[];
+      attachment?: { content: Buffer; filename: string; mimetype: string };
+    },
     res: Response,
   ) {
     let stream: Stream<OpenAI.Chat.Completions.ChatCompletionChunk> & {
@@ -32,11 +37,36 @@ class ChatService {
     };
 
     res.on("close", onClose);
-
     try {
+      const messages = [...history];
+      if (attachment) {
+        messages.push({
+          role: "user",
+          content: [
+            { type: "text", text: message },
+            attachment.mimetype.startsWith("image/")
+              ? {
+                  type: "image_url",
+                  image_url: {
+                    url: attachment.content.toString(),
+                    detail: "high",
+                  },
+                }
+              : {
+                  type: "file",
+                  file: {
+                    file_data: attachment.content.toString(),
+                    file_name: attachment.filename,
+                  },
+                },
+          ],
+        });
+      } else {
+        messages.push({ role: "user", content: message });
+      }
       stream = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [...history, { role: "user", content: message }],
+        model: "gpt-4o-mini",
+        messages,
         stream: true,
       });
 
@@ -44,7 +74,6 @@ class ChatService {
         if (res.writableEnded) return;
 
         const content = chunk.choices[0]?.delta?.content || "";
-        console.log(content);
         if (content) {
           res.write(`event: content\ndata: ${JSON.stringify({ content })}\n\n`);
         }

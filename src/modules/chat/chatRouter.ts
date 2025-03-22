@@ -1,4 +1,5 @@
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
+import { ChatMessageSchema } from "@/modules/chat/chatModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
@@ -8,19 +9,9 @@ import { chatController } from "./chatController";
 export const chatRegistry = new OpenAPIRegistry();
 export const chatRouter: Router = express.Router();
 
-const ChatMessageSchema = z.object({
-  message: z.string().min(1),
-  history: z.array(
-    z.object({
-      role: z.enum(["user", "assistant"]),
-      content: z.string().min(1),
-    }),
-  ),
-});
-
 chatRegistry.registerPath({
   method: "post",
-  path: "/chat/completions",
+  path: "/chat/conversation",
   tags: ["Chat"],
   request: {
     body: {
@@ -40,7 +31,7 @@ chatRegistry.registerPath({
 });
 
 chatRouter.post(
-  "/completions",
+  "/conversation",
   // assertAuthentication,
   validateRequest(z.object({ body: ChatMessageSchema })),
   chatController.streamCompletion,

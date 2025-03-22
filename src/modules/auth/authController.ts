@@ -8,12 +8,14 @@ import passport from "passport";
 
 class AuthController {
   public signUp: RequestHandler = async (req: Request, res: Response) => {
+    console.log("signUp", req.body);
     const { email, password } = req.body;
     const serviceResponse = await authService.signUp(email, password);
     return handleServiceResponse(serviceResponse, res);
   };
 
   public signIn: RequestHandler = async (req: Request, res: Response) => {
+    console.log("signIn", req.body);
     const { email, password, code } = req.body;
     const { refreshToken, serviceResponse } = await authService.signIn(email, password, code);
 

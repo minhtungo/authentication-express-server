@@ -11,6 +11,7 @@ import {
   VerifyEmailSchema,
 } from "@/modules/auth/authModel";
 
+import { paths } from "@/config/path";
 import { validateRequest } from "@/utils/httpHandlers";
 import { authController } from "./authController";
 
@@ -33,7 +34,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.post("/sign-up", validateRequest(z.object({ body: SignUpSchema })), authController.signUp);
+authRouter.post(paths.auth.signUp.path, validateRequest(z.object({ body: SignUpSchema })), authController.signUp);
 
 authRegistry.registerPath({
   method: "post",
@@ -57,7 +58,7 @@ authRegistry.registerPath({
   ),
 });
 
-authRouter.post("/sign-in", validateRequest(z.object({ body: SignInSchema })), authController.signIn);
+authRouter.post(paths.auth.signIn.path, validateRequest(z.object({ body: SignInSchema })), authController.signIn);
 
 authRegistry.registerPath({
   method: "post",
@@ -75,7 +76,11 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.put("/verify-email", validateRequest(z.object({ body: VerifyEmailSchema })), authController.verifyEmail);
+authRouter.put(
+  paths.auth.verifyEmail.path,
+  validateRequest(z.object({ body: VerifyEmailSchema })),
+  authController.verifyEmail,
+);
 
 authRegistry.registerPath({
   method: "post",
@@ -94,7 +99,7 @@ authRegistry.registerPath({
 });
 
 authRouter.post(
-  "/forgot-password",
+  paths.auth.forgotPassword.path,
   validateRequest(z.object({ body: ForgotPasswordSchema })),
   authController.forgotPassword,
 );
@@ -116,7 +121,7 @@ authRegistry.registerPath({
 });
 
 authRouter.post(
-  "/reset-password",
+  paths.auth.resetPassword.path,
   validateRequest(z.object({ body: ResetPasswordSchema })),
   authController.resetPassword,
 );
