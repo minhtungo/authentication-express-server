@@ -16,3 +16,11 @@ export const ChatMessageSchema = z.object({
     })
     .optional(),
 });
+
+export const StudySessionSchema = z.object({
+  attachment: z.object({
+    content: z.string(),
+    filename: z.string(),
+    mimetype: z.string(),
+  }),
+});
