@@ -9,6 +9,7 @@ RUN sudo ./aws/install
 
 WORKDIR /home/app
 
+
 COPY . .
 
 # FROM node:22.14.0-slim

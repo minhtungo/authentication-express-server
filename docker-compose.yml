@@ -47,6 +47,8 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     volumes:
       - ".:/home/app"
+    networks:
+      - app_network
 
 networks:
   app_network:

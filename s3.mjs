@@ -7,7 +7,7 @@ new S3rver({
   directory: "./s3",
   configureBuckets: [
     {
-      name: "get-social",
+      name: process.env.AWS_S3_BUCKET_NAME,
       configs: [fs.readFileSync("./cors.xml")],
     },
   ],
