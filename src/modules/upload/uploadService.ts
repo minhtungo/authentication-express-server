@@ -15,7 +15,7 @@ export class UploadService {
   constructor(repository: UploadRepository = new UploadRepository()) {
     this.uploadRepository = repository;
     this.s3Client = new S3Client({
-      region: "us-east-1",
+      region: env.AWS_REGION,
       ...(env.USE_LOCAL_S3 && {
         endpoint: env.AWS_S3_ENDPOINT,
         credentials: {
@@ -36,7 +36,7 @@ export class UploadService {
         Key: id,
         Conditions: [
           ["content-length-range", 0, 5 * 1024 * 1024],
-          ["starts-with", "$Content-Type", "image/"],
+          // ["starts-with", "$Content-Type", "image/"],
         ],
         Expires: 600,
       });

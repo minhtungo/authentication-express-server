@@ -36,4 +36,5 @@ export const env = cleanEnv(process.env, {
   AWS_S3_BUCKET_NAME: str(),
   AWS_S3_ENDPOINT: str(),
   AWS_S3_PORT: port(),
+  AWS_S3_CONSOLE_PORT: port(),
 });
