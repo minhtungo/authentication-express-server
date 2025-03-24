@@ -53,4 +53,9 @@ export const paths = {
       path: "/chat/suggestions",
     },
   },
+  upload: {
+    presignedUrl: {
+      path: "/presigned-url",
+    },
+  },
 } as const;

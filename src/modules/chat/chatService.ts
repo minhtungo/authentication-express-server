@@ -35,7 +35,6 @@ class ChatService {
     // Handle client disconnection
     const onClose = () => {
       stream?.controller?.abort();
-      logger.info("Client disconnected, aborting stream");
     };
 
     res.on("close", onClose);
