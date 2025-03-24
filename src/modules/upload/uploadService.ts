@@ -41,8 +41,7 @@ export class UploadService {
         Expires: 600,
       });
 
-      const finalUrl =
-        process.env.NODE_ENV === "development" ? `${env.AWS_S3_ENDPOINT}/${env.AWS_S3_BUCKET_NAME}/` : url;
+      const finalUrl = env.USE_LOCAL_S3 ? `${env.AWS_S3_ENDPOINT}/${env.AWS_S3_BUCKET_NAME}/` : url;
 
       return ServiceResponse.success("Presigned URL created successfully", {
         url: finalUrl,

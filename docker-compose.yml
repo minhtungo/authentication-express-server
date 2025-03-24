@@ -36,17 +36,22 @@ services:
       - ./docker-data/mailhog:/maildir
     networks:
       - app_network
-  s3-bucket:
-    build: .
-    restart: always
+  minio:
+    image: minio/minio
     ports:
       - ${AWS_S3_PORT}:9000
-    command: "node s3.mjs"
+      - "9001:9001"  # MinIO Console
     environment:
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
     volumes:
-      - ".:/home/app"
+      - ./docker-data/minio:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
     networks:
       - app_network
 
