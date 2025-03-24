@@ -4,8 +4,8 @@ import type { Request, RequestHandler, Response } from "express";
 
 class UploadController {
   public getPresignedUrl: RequestHandler = async (req: Request, res: Response) => {
-    const serviceResponse = await uploadService.getPresignedUrl();
-    console.log("getPresignedUrl", serviceResponse);
+    const { fileName } = req.body;
+    const serviceResponse = await uploadService.getPresignedUrl(fileName);
     handleServiceResponse(serviceResponse, res);
   };
 }

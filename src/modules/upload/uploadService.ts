@@ -2,6 +2,7 @@ import { env } from "@/config/env";
 import { UploadRepository } from "@/modules/upload/uploadRepository";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 
+import { appConfig } from "@/config/appConfig";
 import { logger } from "@/utils/logger";
 import { ServiceResponse } from "@/utils/serviceResponse";
 import { S3Client } from "@aws-sdk/client-s3";
@@ -27,18 +28,25 @@ export class UploadService {
     });
   }
 
-  async getPresignedUrl() {
+  async getPresignedUrl(filename?: string) {
     try {
-      const id = uuidv4();
+      let key = uuidv4();
+
+      if (filename) {
+        const extension = filename.split(".").pop();
+        if (extension) {
+          key = `${key}.${extension}`;
+        }
+      }
 
       const { url, fields } = await createPresignedPost(this.s3Client, {
         Bucket: env.AWS_S3_BUCKET_NAME!,
-        Key: id,
+        Key: key,
         Conditions: [
-          ["content-length-range", 0, 5 * 1024 * 1024],
+          ["content-length-range", 0, appConfig.upload.maxFileSize],
           // ["starts-with", "$Content-Type", "image/"],
         ],
-        Expires: 600,
+        Expires: appConfig.upload.presignedUrl.expiresIn,
       });
 
       const finalUrl = env.USE_LOCAL_S3 ? `${env.AWS_S3_ENDPOINT}/${env.AWS_S3_BUCKET_NAME}/` : url;
@@ -46,7 +54,7 @@ export class UploadService {
       return ServiceResponse.success("Presigned URL created successfully", {
         url: finalUrl,
         fields,
-        id,
+        id: key,
       });
     } catch (ex) {
       const errorMessage = `Error getting presigned URL: ${(ex as Error).message}`;

@@ -1,6 +1,8 @@
 import { paths } from "@/config/path";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { uploadController } from "@/modules/upload/uploadController";
+import { PresignedUrlSchema } from "@/modules/upload/uploadModel";
+import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
 import { z } from "zod";
@@ -26,4 +28,8 @@ uploadRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-uploadRouter.post(paths.upload.presignedUrl.path, uploadController.getPresignedUrl);
+uploadRouter.post(
+  paths.upload.presignedUrl.path,
+  validateRequest(z.object({ body: PresignedUrlSchema })),
+  uploadController.getPresignedUrl,
+);

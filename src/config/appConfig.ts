@@ -21,4 +21,10 @@ export const appConfig = {
       expiresIn: 7 * 24 * 60 * 60 * 1000,
     },
   },
+  upload: {
+    maxFileSize: 10 * 1024 * 1024,
+    presignedUrl: {
+      expiresIn: 600,
+    },
+  },
 };
