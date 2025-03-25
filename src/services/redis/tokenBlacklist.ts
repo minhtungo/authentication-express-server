@@ -1,5 +1,5 @@
+import { redis } from "@/lib/redis";
 import { logger } from "@/utils/logger";
-import { redis } from "@/utils/redis";
 
 const KEY_PREFIX = "TOKEN_BLACKLIST:";
 

@@ -3,8 +3,8 @@ import { UploadRepository } from "@/modules/upload/uploadRepository";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 
 import { appConfig } from "@/config/appConfig";
+import { ServiceResponse } from "@/lib/serviceResponse";
 import { logger } from "@/utils/logger";
-import { ServiceResponse } from "@/utils/serviceResponse";
 import { S3Client } from "@aws-sdk/client-s3";
 import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";

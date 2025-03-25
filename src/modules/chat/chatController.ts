@@ -1,4 +1,3 @@
-import { handleServiceResponse } from "@/utils/httpHandlers";
 import { logger } from "@/utils/logger";
 import type { Request, Response } from "express";
 import { chatService } from "./chatService";
@@ -17,16 +16,6 @@ class ChatController {
       res.write(`data: ${JSON.stringify({ error: "An error occurred during streaming" })}\n\n`);
       res.end();
     }
-  };
-
-  public extractStudyQuestions = async (req: Request, res: Response) => {
-    const { attachment } = req.body;
-
-    const serviceResponse = await chatService.extractQuestionsFromAttachment({
-      attachment,
-    });
-
-    handleServiceResponse(serviceResponse, res);
   };
 }
 

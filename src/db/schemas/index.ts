@@ -6,4 +6,3 @@ export * from "./users";
 export * from "./userSettings";
 export * from "./verificationTokens";
 export * from "./sessions";
-export * from "./refreshTokens";

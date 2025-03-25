@@ -1,6 +1,6 @@
+import { ServiceResponse } from "@/lib/serviceResponse";
 import { UserRepository } from "@/modules/user/userRepository";
 import { logger } from "@/utils/logger";
-import { ServiceResponse } from "@/utils/serviceResponse";
 import { StatusCodes } from "http-status-codes";
 
 export class UserService {

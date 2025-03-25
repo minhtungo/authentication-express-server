@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
-import type { AccessTokenPayload, RefreshTokenPayload } from "@/types/token";
+import type { AccessTokenPayload } from "@/types/token";
 import { sign } from "jsonwebtoken";
 
 export const generateToken = async (length = 32): Promise<string> => {

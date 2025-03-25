@@ -12,11 +12,11 @@ import { healthCheckRouter } from "@/modules/healthCheck/healthCheckRouter";
 import "@/services/strategies/google";
 import "@/services/strategies/jwt";
 import { appConfig } from "@/config/appConfig";
+import { connectRedis } from "@/lib/redis";
 import assertAuthentication from "@/middlewares/assertAuthentication";
 import { chatRouter } from "@/modules/chat/chatRouter";
 import { uploadRouter } from "@/modules/upload/uploadRouter";
 import { userRouter } from "@/modules/user/userRouter";
-import { connectRedis } from "@/utils/redis";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 
@@ -45,8 +45,8 @@ app.use(requestLogger);
 // Routes
 app.use("/health-check", healthCheckRouter);
 app.use(`${appConfig.rootPath}/auth`, authRouter);
-app.use(`${appConfig.rootPath}/chat`, chatRouter);
-app.use(`${appConfig.rootPath}/upload`, uploadRouter);
+app.use(`${appConfig.rootPath}/chat`, assertAuthentication, chatRouter);
+app.use(`${appConfig.rootPath}/upload`, assertAuthentication, uploadRouter);
 app.use(`${appConfig.rootPath}/user`, assertAuthentication, userRouter);
 
 // Swagger UI

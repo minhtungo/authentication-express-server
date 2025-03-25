@@ -1,4 +1,4 @@
-import { ServiceResponseSchema } from "@/utils/serviceResponse";
+import { ServiceResponseSchema } from "@/lib/serviceResponse";
 import { StatusCodes } from "http-status-codes";
 import type { z } from "zod";
 

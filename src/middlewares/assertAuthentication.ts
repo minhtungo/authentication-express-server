@@ -1,8 +1,8 @@
+import { ServiceResponse } from "@/lib/serviceResponse";
 import { checkTokenBlacklist } from "@/services/redis/tokenBlacklist";
 import type { AccessTokenPayload } from "@/types/token";
 import { handleServiceResponse } from "@/utils/httpHandlers";
 import { logger } from "@/utils/logger";
-import { ServiceResponse } from "@/utils/serviceResponse";
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import passport from "passport";

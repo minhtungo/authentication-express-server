@@ -1,8 +1,8 @@
 import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
+import { generateAccessToken, generateRefreshToken } from "@/lib/token";
 import { authService } from "@/modules/auth/authService";
 import { handleServiceResponse } from "@/utils/httpHandlers";
-import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import passport from "passport";
 

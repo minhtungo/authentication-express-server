@@ -10,8 +10,8 @@ import {
   verificationTokens,
 } from "@/db/schemas";
 import { type InsertUser, type User, users } from "@/db/schemas/users";
-import { hashPassword } from "@/utils/password";
-import { generateToken } from "@/utils/token";
+import { hashPassword } from "@/lib/password";
+import { generateToken } from "@/lib/token";
 import { eq } from "drizzle-orm";
 
 export class AuthRepository {

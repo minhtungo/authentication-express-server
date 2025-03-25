@@ -2,14 +2,14 @@ import { StatusCodes } from "http-status-codes";
 
 import { appConfig } from "@/config/appConfig";
 import { env } from "@/config/env";
+import { verifyPassword } from "@/lib/password";
+import { ServiceResponse } from "@/lib/serviceResponse";
+import { generateAccessToken, generateRefreshToken } from "@/lib/token";
 import { AuthRepository } from "@/modules/auth/authRepository";
 import { emailService } from "@/services/email/emailService";
 import { addTokenToBlacklist, checkTokenBlacklist } from "@/services/redis/tokenBlacklist";
 import type { RefreshTokenPayload } from "@/types/token";
 import { logger } from "@/utils/logger";
-import { verifyPassword } from "@/utils/password";
-import { ServiceResponse } from "@/utils/serviceResponse";
-import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 import { createTransaction } from "@/utils/transaction";
 import type { Response } from "express";
 import { verify } from "jsonwebtoken";
