@@ -27,4 +27,5 @@ export const appConfig = {
       expiresIn: 600,
     },
   },
+  rootPath: "/api",
 };

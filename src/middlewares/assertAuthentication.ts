@@ -19,7 +19,6 @@ const assertAuthentication = (req: Request, res: Response, next: NextFunction) =
     }
 
     // Check if the session is blacklisted
-    console.log("assertAuthentication info", info);
     const payload = info.payload as AccessTokenPayload;
     const isBlacklisted = await checkTokenBlacklist(payload.sessionId);
 

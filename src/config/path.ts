@@ -26,6 +26,9 @@ export const paths = {
     },
     googleOAuth: {
       path: "/google",
+      callback: {
+        path: "/google/callback",
+      },
     },
     facebookOAuth: {
       path: "/facebook",

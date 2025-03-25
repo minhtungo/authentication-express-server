@@ -22,8 +22,6 @@ class ChatController {
   public extractStudyQuestions = async (req: Request, res: Response) => {
     const { attachment } = req.body;
 
-    console.log("----attachment", attachment);
-
     const serviceResponse = await chatService.extractQuestionsFromAttachment({
       attachment,
     });

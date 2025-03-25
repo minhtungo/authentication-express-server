@@ -86,8 +86,6 @@ export class AuthService {
     try {
       const user = await this.authRepository.getUserByEmail(email);
 
-      console.log("user", user);
-
       if (!user || !user.emailVerified || !user.id || !user.password) {
         return {
           refreshToken: "",

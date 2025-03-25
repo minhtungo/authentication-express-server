@@ -133,7 +133,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.get("/google", authController.handleOAuthSignIn);
+authRouter.get(paths.auth.googleOAuth.path, authController.handleOAuthSignIn);
 
 authRegistry.registerPath({
   method: "get",
@@ -142,7 +142,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.get("/google/callback", authController.handleOauthSignInCallback);
+authRouter.get(paths.auth.googleOAuth.callback.path, authController.handleOauthSignInCallback);
 
 authRegistry.registerPath({
   method: "post",
@@ -151,7 +151,7 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.post("/sign-out", authController.signOut);
+authRouter.post(paths.auth.signOut.path, authController.signOut);
 
 authRegistry.registerPath({
   method: "put",
@@ -160,4 +160,4 @@ authRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-authRouter.put("/refresh", authController.refreshToken);
+authRouter.put(paths.auth.refresh.path, authController.refreshToken);

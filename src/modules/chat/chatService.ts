@@ -76,6 +76,7 @@ class ChatService {
         if (res.writableEnded) return;
 
         const content = chunk.choices[0]?.delta?.content || "";
+        console.log("content", content);
         if (content) {
           res.write(`event: content\ndata: ${JSON.stringify({ content })}\n\n`);
         }
@@ -186,7 +187,6 @@ Return only the JSON array as the output. Do not include any additional commenta
         throw new Error("Failed to extract questions from the document");
       }
 
-      console.log("----responseContent", responseContent);
       try {
         const parsedContent = JSON.parse(responseContent);
         return ServiceResponse.success(
