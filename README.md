@@ -53,25 +53,24 @@
 
 ## 📁 Project Structure 
 
-src/
-├── config/         # Configuration files and environment setup
-│   ├── appConfig.ts    # Application configuration
-│   ├── env.ts          # Environment variables validation
-│   └──
-├── db/             # Database schemas and migrations
-│   └── schemas/    # Database table definitions and validation
-├── docs/           # OpenAPI/Swagger documentation
-├── lib/            # Shared library code
-├── middlewares/    # Express middlewares
-├── modules/        # Feature modules
-│   ├── auth/       # Authentication functionality
-│   ├── chat/       # Chat and AI functionality
-│   ├── healthCheck/ # Health check endpoints
-│   ├── upload/     # File upload functionality
-│   └── user/       # User management
-├── services/       # Business logic and external services
-│   └── strategies/ # Passport.js authentication strategies
-└── utils/          # Utility functions and helpers
+- `/src`
+  - `/config` - Configuration files and environment setup
+    - `appConfig.ts` - Application configuration
+    - `env.ts` - Environment variables validation
+  - `/db` - Database schemas and migrations
+    - `/schemas` - Database table definitions and validation
+  - `/docs` - OpenAPI/Swagger documentation
+  - `/lib` - Shared library code
+  - `/middlewares` - Express middlewares
+  - `/modules` - Feature modules
+    - `/auth` - Authentication functionality
+    - `/chat` - Chat and AI functionality
+    - `/healthCheck` - Health check endpoints
+    - `/upload` - File upload functionality
+    - `/user` - User management
+  - `/services` - Business logic and external services
+    - `/strategies` - Passport.js authentication strategies
+  - `/utils` - Utility functions and helpers
 
 ## Credits
 [express-typescript-boilerplate](https://github.com/edwinhern/express-typescript-2024)
