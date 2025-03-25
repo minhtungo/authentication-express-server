@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { chats } from "@/db/schemas";
+import { type ChatMessage, type InsertChatMessage, chatMessages, chats } from "@/db/schemas";
 import type { InsertChat } from "@/db/schemas/chats/validation";
 import { eq } from "drizzle-orm";
 
@@ -21,6 +21,33 @@ export class ChatRepository {
       where: eq(chats.userId, userId),
     });
     return chatRooms;
+  }
+
+  async createChatMessage(data: InsertChatMessage) {
+    const [newMessage] = await db.insert(chatMessages).values(data).returning();
+    return newMessage;
+  }
+
+  async getChatMessagesByChatId(chatId: string) {
+    const messages = await db.query.chatMessages.findMany({
+      where: eq(chatMessages.chatId, chatId),
+      orderBy: (chatMessages) => [chatMessages.createdAt],
+    });
+    return messages;
+  }
+
+  async saveAssistantMessage(chatId: string, userId: string, content: string): Promise<ChatMessage> {
+    const [assistantMessage] = await db
+      .insert(chatMessages)
+      .values({
+        chatId,
+        userId,
+        content,
+        role: "assistant",
+      })
+      .returning();
+
+    return assistantMessage;
   }
 }
 

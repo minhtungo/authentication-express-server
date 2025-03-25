@@ -1,3 +1,4 @@
+import { paths } from "@/config/path";
 import { ChatSchema } from "@/db/schemas/chats/validation";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { ChatMessageSchema, CreateChatRoomSchema } from "@/modules/chat/chatModel";
@@ -62,4 +63,32 @@ chatRegistry.registerPath({
   responses: createApiResponse(z.array(ChatSchema), "Success"),
 });
 
-chatRouter.get("/rooms", chatController.getUserChatRooms);
+chatRouter.get(paths.chat.rooms.path, chatController.getUserChatRooms);
+
+chatRegistry.registerPath({
+  method: "get",
+  path: "/chat/messages/{chatId}",
+  tags: ["Chat"],
+  request: {
+    params: z.object({
+      chatId: z.string(),
+    }),
+  },
+  responses: createApiResponse(
+    z.object({
+      messages: z.array(
+        z.object({
+          id: z.string(),
+          content: z.string(),
+          role: z.string(),
+          chatId: z.string(),
+          userId: z.string(),
+          createdAt: z.string().datetime(),
+        }),
+      ),
+    }),
+    "Success",
+  ),
+});
+
+chatRouter.get(paths.chat.messages.path, chatController.getChatMessages);

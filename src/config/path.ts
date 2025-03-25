@@ -61,6 +61,12 @@ export const paths = {
     rooms: {
       path: "/rooms",
     },
+    message: {
+      path: "/message",
+    },
+    messages: {
+      path: "/messages/:chatId",
+    },
   },
   upload: {
     presignedUrl: {

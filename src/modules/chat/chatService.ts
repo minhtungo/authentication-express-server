@@ -1,4 +1,5 @@
 import { env } from "@/config/env";
+import type { ChatMessage } from "@/db/schemas";
 import type { Chat, InsertChat } from "@/db/schemas/chats/validation";
 import { ServiceResponse } from "@/lib/serviceResponse";
 import { chatRepository } from "@/modules/chat/chatRepository";
@@ -127,6 +128,26 @@ class ChatService {
     } catch (error) {
       logger.error("Error retrieving chat rooms:", error);
       return ServiceResponse.failure("Failed to retrieve chat rooms", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getChatMessages(userId: string, chatId: string): Promise<ServiceResponse<{ messages: ChatMessage[] } | null>> {
+    try {
+      const chatRoom = await chatRepository.getChatRoomById(chatId);
+
+      if (!chatRoom) {
+        return ServiceResponse.failure("Chat room not found", null, StatusCodes.NOT_FOUND);
+      }
+
+      if (chatRoom.userId !== userId) {
+        return ServiceResponse.failure("You don't have access to this chat room", null, StatusCodes.FORBIDDEN);
+      }
+
+      const messages = await chatRepository.getChatMessagesByChatId(chatId);
+      return ServiceResponse.success("Messages retrieved successfully", { messages }, StatusCodes.OK);
+    } catch (error) {
+      logger.error("Error retrieving messages:", error);
+      return ServiceResponse.failure("Failed to retrieve messages", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 }

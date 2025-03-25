@@ -7,3 +7,4 @@ export * from "./userSettings";
 export * from "./verificationTokens";
 export * from "./sessions";
 export * from "./chats";
+export * from "./chatMessages";

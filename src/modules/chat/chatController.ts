@@ -25,6 +25,14 @@ class ChatController {
     const serviceResponse = await chatService.getUserChatRooms(userId);
     handleServiceResponse(serviceResponse, res);
   };
+
+  public getChatMessages = async (req: Request, res: Response) => {
+    const { chatId } = req.params;
+    const userId = req.user?.id!;
+
+    const serviceResponse = await chatService.getChatMessages(userId, chatId);
+    handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const chatController = new ChatController();
