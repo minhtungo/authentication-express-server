@@ -20,6 +20,7 @@ class AuthController {
     if (serviceResponse.success && refreshToken) {
       authService.setRefreshTokenToCookie(res, refreshToken);
     }
+
     handleServiceResponse(serviceResponse, res);
   };
 

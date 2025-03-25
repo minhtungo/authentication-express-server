@@ -81,10 +81,12 @@ export class AuthService {
     code?: string,
   ): Promise<{
     refreshToken: string;
-    serviceResponse: ServiceResponse<{ accessToken: string; userId: string } | null>;
+    serviceResponse: ServiceResponse<{ accessToken: string; convertedUser: { id: string } } | null>;
   }> {
     try {
       const user = await this.authRepository.getUserByEmail(email);
+
+      console.log("user", user);
 
       if (!user || !user.emailVerified || !user.id || !user.password) {
         return {
@@ -127,7 +129,12 @@ export class AuthService {
         refreshToken,
         serviceResponse: ServiceResponse.success(
           "Signed in successfully",
-          { accessToken, userId: user.id },
+          {
+            accessToken,
+            convertedUser: {
+              id: user.id,
+            },
+          },
           StatusCodes.OK,
         ),
       };
