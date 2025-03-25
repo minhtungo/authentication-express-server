@@ -55,6 +55,12 @@ export const paths = {
     suggestions: {
       path: "/chat/suggestions",
     },
+    room: {
+      path: "/room",
+    },
+    rooms: {
+      path: "/rooms",
+    },
   },
   upload: {
     presignedUrl: {

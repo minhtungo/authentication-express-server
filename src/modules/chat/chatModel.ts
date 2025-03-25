@@ -17,10 +17,6 @@ export const ChatMessageSchema = z.object({
     .optional(),
 });
 
-export const StudySessionSchema = z.object({
-  attachment: z.object({
-    content: z.string(),
-    filename: z.string(),
-    mimetype: z.string(),
-  }),
+export const CreateChatRoomSchema = z.object({
+  name: z.string().min(1, "Chat room name is required"),
 });

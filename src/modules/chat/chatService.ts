@@ -1,6 +1,10 @@
 import { env } from "@/config/env";
+import type { Chat, InsertChat } from "@/db/schemas/chats/validation";
+import { ServiceResponse } from "@/lib/serviceResponse";
+import { chatRepository } from "@/modules/chat/chatRepository";
 import { logger } from "@/utils/logger";
 import type { Response } from "express";
+import { StatusCodes } from "http-status-codes";
 import { OpenAI } from "openai";
 import type { ChatCompletionAssistantMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
 import type { Stream } from "openai/streaming";
@@ -55,7 +59,7 @@ class ChatService {
                   type: "file",
                   file: {
                     file_data: attachment.content,
-                    file_name: attachment.filename,
+                    filename: attachment.filename,
                   },
                 },
           ],
@@ -91,6 +95,38 @@ class ChatService {
       }
     } finally {
       res.removeListener("close", onClose);
+    }
+  }
+
+  async createChatRoom(userId: string, name: string): Promise<ServiceResponse<{ chatRoom: Chat } | null>> {
+    try {
+      const chatRoomData: InsertChat = {
+        name,
+        userId,
+      };
+
+      const newChatRoom = await chatRepository.createChatRoom(chatRoomData);
+
+      return ServiceResponse.success(
+        "Chat room created successfully",
+        {
+          chatRoom: newChatRoom,
+        },
+        StatusCodes.CREATED,
+      );
+    } catch (error) {
+      logger.error("Error creating chat room:", error);
+      return ServiceResponse.failure("Failed to create chat room", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getUserChatRooms(userId: string): Promise<ServiceResponse<{ chatRooms: Chat[] } | null>> {
+    try {
+      const chatRooms = await chatRepository.getChatRoomsByUserId(userId);
+      return ServiceResponse.success("Chat rooms retrieved successfully", { chatRooms }, StatusCodes.OK);
+    } catch (error) {
+      logger.error("Error retrieving chat rooms:", error);
+      return ServiceResponse.failure("Failed to retrieve chat rooms", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 }
