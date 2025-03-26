@@ -1,7 +1,7 @@
 import { paths } from "@/config/path";
 import { ChatSchema } from "@/db/schemas/chats/validation";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
-import { ChatMessageSchema, CreateChatRoomSchema } from "@/modules/chat/chatModel";
+import { ChatMessageSchema, CreateChatRoomSchema, SendMessageSchema } from "@/modules/chat/chatModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
@@ -13,34 +13,7 @@ export const chatRouter: Router = express.Router();
 
 chatRegistry.registerPath({
   method: "post",
-  path: "/chat/conversation",
-  tags: ["Chat"],
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: ChatMessageSchema,
-        },
-      },
-    },
-  },
-  responses: createApiResponse(
-    z.object({
-      message: z.string(),
-    }),
-    "Success",
-  ),
-});
-
-chatRouter.post(
-  "/conversation",
-  validateRequest(z.object({ body: ChatMessageSchema })),
-  chatController.streamCompletion,
-);
-
-chatRegistry.registerPath({
-  method: "post",
-  path: "/chat/room",
+  path: `/chat${paths.chat.room.path}`,
   tags: ["Chat"],
   request: {
     body: {
@@ -54,11 +27,15 @@ chatRegistry.registerPath({
   responses: createApiResponse(ChatSchema, "Created"),
 });
 
-chatRouter.post("/room", validateRequest(z.object({ body: CreateChatRoomSchema })), chatController.createChatRoom);
+chatRouter.post(
+  paths.chat.room.path,
+  validateRequest(z.object({ body: CreateChatRoomSchema })),
+  chatController.createChatRoom,
+);
 
 chatRegistry.registerPath({
   method: "get",
-  path: "/chat/rooms",
+  path: `/chat${paths.chat.rooms.path}`,
   tags: ["Chat"],
   responses: createApiResponse(z.array(ChatSchema), "Success"),
 });
@@ -67,7 +44,7 @@ chatRouter.get(paths.chat.rooms.path, chatController.getUserChatRooms);
 
 chatRegistry.registerPath({
   method: "get",
-  path: "/chat/messages/{chatId}",
+  path: `/chat${paths.chat.messages.path}`,
   tags: ["Chat"],
   request: {
     params: z.object({
@@ -76,19 +53,37 @@ chatRegistry.registerPath({
   },
   responses: createApiResponse(
     z.object({
-      messages: z.array(
-        z.object({
-          id: z.string(),
-          content: z.string(),
-          role: z.string(),
-          chatId: z.string(),
-          userId: z.string(),
-          createdAt: z.string().datetime(),
-        }),
-      ),
+      messages: z.array(ChatMessageSchema),
     }),
     "Success",
   ),
 });
 
 chatRouter.get(paths.chat.messages.path, chatController.getChatMessages);
+
+chatRegistry.registerPath({
+  method: "post",
+  path: `/chat${paths.chat.message.path}`,
+  tags: ["Chat"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: SendMessageSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(
+    z.object({
+      message: z.string(),
+    }),
+    "Success",
+  ),
+});
+
+chatRouter.post(
+  paths.chat.message.path,
+  validateRequest(z.object({ body: SendMessageSchema })),
+  chatController.sendMessage,
+);

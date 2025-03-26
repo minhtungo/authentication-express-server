@@ -7,7 +7,6 @@ import { logger } from "@/utils/logger";
 import type { Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { OpenAI } from "openai";
-import type { ChatCompletionAssistantMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
 import type { Stream } from "openai/streaming";
 
 class ChatService {
@@ -19,15 +18,17 @@ class ChatService {
     });
   }
 
-  async streamCompletion(
+  async sendMessageAndStream(
     {
+      chatId,
       message,
-      history = [],
       attachment,
+      userId,
     }: {
+      chatId: string;
       message: string;
-      history?: (ChatCompletionAssistantMessageParam | ChatCompletionUserMessageParam)[];
       attachment?: { content: string; filename: string; mimetype: string };
+      userId: string;
     },
     res: Response,
   ) {
@@ -42,9 +43,34 @@ class ChatService {
 
     res.on("close", onClose);
     try {
-      const messages = [...history];
+      const chatRoom = await chatRepository.getChatRoomById(chatId);
+
+      if (!chatRoom) {
+        throw new Error("Chat room not found");
+      }
+
+      if (chatRoom.userId !== userId) {
+        throw new Error("You don't have access to this chat room");
+      }
+
+      await chatRepository.createChatMessage({
+        chatId,
+        userId,
+        content: message,
+        role: "user",
+      });
+
+      const previousMessages = await chatRepository.getChatMessagesByChatId(chatId);
+
+      const history = previousMessages.slice(-10).map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+
+      let formattedMessage: any = { role: "user", content: message };
+
       if (attachment) {
-        messages.push({
+        formattedMessage = {
           role: "user",
           content: [
             { type: "text", text: message },
@@ -64,26 +90,33 @@ class ChatService {
                   },
                 },
           ],
-        });
-      } else {
-        messages.push({ role: "user", content: message });
+        };
       }
 
       stream = await this.openai.chat.completions.create({
         model: "gpt-4o-mini",
-        messages,
+        messages: [...history, formattedMessage],
         stream: true,
       });
+
+      let assistantResponse = "";
 
       for await (const chunk of stream) {
         if (res.writableEnded) return;
 
         const content = chunk.choices[0]?.delta?.content || "";
         if (content) {
+          assistantResponse += content;
           res.write(`event: content\ndata: ${JSON.stringify({ content })}\n\n`);
         }
       }
 
+      await chatRepository.createChatMessage({
+        chatId,
+        userId,
+        content: assistantResponse,
+        role: "assistant",
+      });
       res.write("event: done\ndata: {}\n\n");
       res.end();
     } catch (error) {

@@ -46,15 +46,6 @@ export const paths = {
     },
   },
   chat: {
-    history: {
-      path: "/chat/history",
-    },
-    list: {
-      path: "/chat/list",
-    },
-    suggestions: {
-      path: "/chat/suggestions",
-    },
     room: {
       path: "/room",
     },

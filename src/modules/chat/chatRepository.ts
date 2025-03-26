@@ -35,20 +35,6 @@ export class ChatRepository {
     });
     return messages;
   }
-
-  async saveAssistantMessage(chatId: string, userId: string, content: string): Promise<ChatMessage> {
-    const [assistantMessage] = await db
-      .insert(chatMessages)
-      .values({
-        chatId,
-        userId,
-        content,
-        role: "assistant",
-      })
-      .returning();
-
-    return assistantMessage;
-  }
 }
 
 export const chatRepository = new ChatRepository();
