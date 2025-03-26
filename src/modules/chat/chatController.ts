@@ -26,14 +26,22 @@ class ChatController {
   };
 
   public sendMessage = async (req: Request, res: Response) => {
-    const { chatId, message, attachments } = req.body;
+    const { chatId, message, attachments, newChat, chatName } = req.body;
     const userId = req.user?.id!;
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
-    await chatService.sendMessageAndStream({ chatId, message, attachment: attachments, userId }, res);
+    await chatService.sendMessageAndStream(
+      {
+        chatId,
+        message,
+        attachments,
+        userId,
+      },
+      res,
+    );
   };
 }
 

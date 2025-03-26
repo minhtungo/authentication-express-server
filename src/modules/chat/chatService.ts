@@ -22,12 +22,12 @@ class ChatService {
     {
       chatId,
       message,
-      attachment,
+      attachments,
       userId,
     }: {
-      chatId: string;
+      chatId?: string;
       message: string;
-      attachment?: { content: string; filename: string; mimetype: string };
+      attachments?: { content: string; filename: string; mimetype: string }[];
       userId: string;
     },
     res: Response,
@@ -43,14 +43,30 @@ class ChatService {
 
     res.on("close", onClose);
     try {
-      const chatRoom = await chatRepository.getChatRoomById(chatId);
+      let chatRoom: Chat | undefined;
 
-      if (!chatRoom) {
-        throw new Error("Chat room not found");
-      }
+      if (!chatId) {
+        const defaultChatName = message.substring(0, 30) + (message.length > 30 ? "..." : "");
 
-      if (chatRoom.userId !== userId) {
-        throw new Error("You don't have access to this chat room");
+        const chatRoomData: InsertChat = {
+          name: defaultChatName,
+          userId,
+        };
+
+        chatRoom = await chatRepository.createChatRoom(chatRoomData);
+        chatId = chatRoom.id;
+
+        res.write(`event: chatCreated\ndata: ${JSON.stringify({ chatId: chatRoom.id, chatName: chatRoom.name })}\n\n`);
+      } else {
+        chatRoom = await chatRepository.getChatRoomById(chatId);
+
+        if (!chatRoom) {
+          throw new Error("Chat room not found");
+        }
+
+        if (chatRoom.userId !== userId) {
+          throw new Error("You don't have access to this chat room");
+        }
       }
 
       await chatRepository.createChatMessage({
@@ -69,26 +85,28 @@ class ChatService {
 
       let formattedMessage: any = { role: "user", content: message };
 
-      if (attachment) {
+      if (attachments) {
         formattedMessage = {
           role: "user",
           content: [
             { type: "text", text: message },
-            attachment.mimetype.startsWith("image/")
-              ? {
-                  type: "image_url",
-                  image_url: {
-                    url: attachment.content,
-                    detail: "high",
+            ...attachments.map((attachment) =>
+              attachment.mimetype.startsWith("image/")
+                ? {
+                    type: "image_url",
+                    image_url: {
+                      url: attachment.content,
+                      detail: "high",
+                    },
+                  }
+                : {
+                    type: "file",
+                    file: {
+                      file_data: attachment.content,
+                      filename: attachment.filename,
+                    },
                   },
-                }
-              : {
-                  type: "file",
-                  file: {
-                    file_data: attachment.content,
-                    filename: attachment.filename,
-                  },
-                },
+            ),
           ],
         };
       }
