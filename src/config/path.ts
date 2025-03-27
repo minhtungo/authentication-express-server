@@ -46,17 +46,12 @@ export const paths = {
     },
   },
   chat: {
-    room: {
-      path: "/room",
+    conversations: {
+      path: "/conversations",
     },
-    rooms: {
-      path: "/rooms",
-    },
-    message: {
-      path: "/message",
-    },
-    messages: {
-      path: "/messages/:chatId",
+    conversation: {
+      path: "/conversation",
+      getHref: (conversationId: string) => `/chat/conversation/${conversationId}`,
     },
   },
   upload: {

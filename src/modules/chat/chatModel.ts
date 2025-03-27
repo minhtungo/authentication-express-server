@@ -1,13 +1,7 @@
 import { z } from "zod";
 
-export const ChatMessageSchema = z.object({
+export const MessageSchema = z.object({
   message: z.string().min(1),
-  history: z.array(
-    z.object({
-      role: z.enum(["user", "assistant"]),
-      content: z.string().min(1),
-    }),
-  ),
   attachments: z
     .object({
       content: z.string(),
@@ -22,7 +16,7 @@ export const CreateChatRoomSchema = z.object({
 });
 
 export const SendMessageSchema = z.object({
-  chatId: z.string().min(1, "Chat room ID is required"),
+  chatId: z.string().min(1, "Chat room ID is required").optional(),
   message: z.string().min(1, "Message content is required"),
   attachments: z
     .array(
@@ -35,4 +29,32 @@ export const SendMessageSchema = z.object({
         .optional(),
     )
     .optional(),
+});
+
+export const GetChatMessagesSchema = z.object({
+  chatId: z.string().min(1, "Chat room ID is required"),
+  offset: z.number().optional(),
+  limit: z.number().optional(),
+});
+
+export const GetChatMessagesRequestSchema = z.object({
+  params: z.object({
+    chatId: z.string(),
+  }),
+  query: z.object({
+    offset: z
+      .string()
+      .optional()
+      .transform((val) => (val ? Number.parseInt(val, 10) : 0)),
+    limit: z
+      .string()
+      .optional()
+      .transform((val) => (val ? Number.parseInt(val, 10) : 30)),
+  }),
+});
+
+export const GetChatMessagesResponseSchema = z.object({
+  messages: z.array(MessageSchema),
+  hasNextPage: z.boolean(),
+  nextOffset: z.number().optional(),
 });

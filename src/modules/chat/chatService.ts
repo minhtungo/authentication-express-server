@@ -69,12 +69,16 @@ class ChatService {
         }
       }
 
-      await chatRepository.createChatMessage({
-        chatId,
-        userId,
-        content: message,
-        role: "user",
-      });
+      try {
+        const userMessage = await chatRepository.createChatMessage({
+          chatId,
+          userId,
+          content: message,
+          role: "user",
+        });
+      } catch (error) {
+        console.log("error userMessage", error);
+      }
 
       const previousMessages = await chatRepository.getChatMessagesByChatId(chatId);
 
@@ -182,10 +186,19 @@ class ChatService {
     }
   }
 
-  async getChatMessages(userId: string, chatId: string): Promise<ServiceResponse<{ messages: ChatMessage[] } | null>> {
+  async getChatMessages({
+    userId,
+    chatId,
+    offset,
+    limit,
+  }: {
+    userId: string;
+    chatId: string;
+    offset: number;
+    limit: number;
+  }): Promise<ServiceResponse<{ messages: ChatMessage[]; hasNextPage: boolean; nextOffset: number | null } | null>> {
     try {
       const chatRoom = await chatRepository.getChatRoomById(chatId);
-
       if (!chatRoom) {
         return ServiceResponse.failure("Chat room not found", null, StatusCodes.NOT_FOUND);
       }
@@ -194,8 +207,20 @@ class ChatService {
         return ServiceResponse.failure("You don't have access to this chat room", null, StatusCodes.FORBIDDEN);
       }
 
-      const messages = await chatRepository.getChatMessagesByChatId(chatId);
-      return ServiceResponse.success("Messages retrieved successfully", { messages }, StatusCodes.OK);
+      const messages = await chatRepository.getChatMessagesByChatId(chatId, offset, limit + 1);
+
+      const hasNextPage = messages.length > limit;
+
+      const paginatedMessages = hasNextPage ? messages.slice(0, limit) : messages;
+
+      const nextOffset = hasNextPage ? offset + limit : null;
+
+      console.log("messages", messages);
+      return ServiceResponse.success(
+        "Messages retrieved successfully",
+        { messages: paginatedMessages, hasNextPage, nextOffset },
+        StatusCodes.OK,
+      );
     } catch (error) {
       logger.error("Error retrieving messages:", error);
       return ServiceResponse.failure("Failed to retrieve messages", null, StatusCodes.INTERNAL_SERVER_ERROR);

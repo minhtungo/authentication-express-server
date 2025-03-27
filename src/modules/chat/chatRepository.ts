@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { type ChatMessage, type InsertChatMessage, chatMessages, chats } from "@/db/schemas";
+import { type InsertChatMessage, chatMessages, chats } from "@/db/schemas";
 import type { InsertChat } from "@/db/schemas/chats/validation";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 export class ChatRepository {
   async createChatRoom(data: InsertChat) {
@@ -19,6 +19,7 @@ export class ChatRepository {
   async getChatRoomsByUserId(userId: string) {
     const chatRooms = await db.query.chats.findMany({
       where: eq(chats.userId, userId),
+      orderBy: (chats) => [desc(chats.createdAt)],
     });
     return chatRooms;
   }
@@ -28,10 +29,12 @@ export class ChatRepository {
     return newMessage;
   }
 
-  async getChatMessagesByChatId(chatId: string) {
+  async getChatMessagesByChatId(chatId: string, offset = 0, limit = 20) {
     const messages = await db.query.chatMessages.findMany({
       where: eq(chatMessages.chatId, chatId),
-      orderBy: (chatMessages) => [chatMessages.createdAt],
+      orderBy: [desc(chatMessages.createdAt)],
+      offset,
+      limit,
     });
     return messages;
   }
