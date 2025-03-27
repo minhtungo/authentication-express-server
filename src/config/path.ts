@@ -58,5 +58,11 @@ export const paths = {
     presignedUrl: {
       path: "/presigned-url",
     },
+    confirm: {
+      path: "/confirm",
+    },
+    userUploads: {
+      path: "/user-uploads",
+    },
   },
 } as const;

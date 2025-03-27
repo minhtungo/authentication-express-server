@@ -1,7 +1,7 @@
 import { paths } from "@/config/path";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { uploadController } from "@/modules/upload/uploadController";
-import { PresignedUrlSchema } from "@/modules/upload/uploadModel";
+import { ConfirmUploadSchema, PresignedUrlSchema } from "@/modules/upload/uploadModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
@@ -32,4 +32,26 @@ uploadRouter.post(
   paths.upload.presignedUrl.path,
   validateRequest(z.object({ body: PresignedUrlSchema })),
   uploadController.getPresignedUrl,
+);
+
+uploadRegistry.registerPath({
+  method: "post",
+  path: "/upload/confirm",
+  tags: ["Upload"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: ConfirmUploadSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+uploadRouter.post(
+  paths.upload.confirm.path,
+  validateRequest(z.object({ body: ConfirmUploadSchema })),
+  uploadController.confirmUpload,
 );

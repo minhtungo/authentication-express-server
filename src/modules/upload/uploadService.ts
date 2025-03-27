@@ -54,13 +54,84 @@ export class UploadService {
       return ServiceResponse.success("Presigned URL created successfully", {
         url: finalUrl,
         fields,
-        id: key,
+        key,
+        filename: filename || "unnamed",
       });
     } catch (ex) {
       const errorMessage = `Error getting presigned URL: ${(ex as Error).message}`;
       logger.error(errorMessage);
       return ServiceResponse.failure(
         "An error occurred while getting presigned URL.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async confirmUpload(data: { key: string; filename: string; mimetype: string; size?: number }, userId: string) {
+    try {
+      const baseUrl = env.USE_LOCAL_S3
+        ? `${env.AWS_S3_ENDPOINT}/${env.AWS_S3_BUCKET_NAME}/`
+        : `https://${env.AWS_S3_BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com/`;
+
+      const fileUrl = `${baseUrl}${data.key}`;
+
+      const fileUpload = await this.uploadRepository.createFileUpload({
+        key: data.key,
+        filename: data.filename,
+        mimetype: data.mimetype,
+        size: data.size?.toString(),
+        url: fileUrl,
+        userId,
+      });
+
+      return ServiceResponse.success("File upload recorded successfully", fileUpload);
+    } catch (ex) {
+      const errorMessage = `Error confirming upload: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while confirming the upload.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getUserUploads(userId: string, offset = 0, limit = 30) {
+    try {
+      const uploads = await this.uploadRepository.getFileUploadsByUserId(userId, offset, limit);
+      return ServiceResponse.success("User uploads retrieved successfully", uploads);
+    } catch (ex) {
+      const errorMessage = `Error getting user uploads: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while retrieving uploads.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteUpload(fileId: string, userId: string) {
+    try {
+      const fileUpload = await this.uploadRepository.getFileUploadById(fileId);
+
+      if (!fileUpload) {
+        return ServiceResponse.failure("File not found", null, StatusCodes.NOT_FOUND);
+      }
+
+      if (fileUpload.userId !== userId) {
+        return ServiceResponse.failure("Unauthorized", null, StatusCodes.FORBIDDEN);
+      }
+
+      await this.uploadRepository.deleteFileUpload(fileId);
+
+      return ServiceResponse.success("File deleted successfully", null);
+    } catch (ex) {
+      const errorMessage = `Error deleting file: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while deleting the file.",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );

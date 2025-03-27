@@ -8,3 +8,4 @@ export * from "./verificationTokens";
 export * from "./sessions";
 export * from "./chats";
 export * from "./chatMessages";
+export * from "./fileUploads";

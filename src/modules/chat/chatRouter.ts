@@ -17,6 +17,7 @@ import { chatController } from "./chatController";
 export const chatRegistry = new OpenAPIRegistry();
 export const chatRouter: Router = express.Router();
 
+// CONVERSATIONS
 // Create Chat Room
 chatRegistry.registerPath({
   method: "post",
@@ -57,6 +58,17 @@ chatRouter.get(
   chatController.getUserChatRooms,
 );
 
+// Delete All Chat Rooms
+chatRegistry.registerPath({
+  method: "delete",
+  path: `/chat${paths.chat.conversations.path}`,
+  tags: ["Chat", "ChatRoom"],
+  responses: createApiResponse(z.null(), "Success"),
+});
+
+chatRouter.delete(paths.chat.conversations.path, chatController.deleteAllChatRooms);
+
+// CONVERSATION
 // Get Chat Room Messages
 chatRegistry.registerPath({
   method: "get",
@@ -125,24 +137,4 @@ chatRegistry.registerPath({
   ),
 });
 
-chatRouter.delete(
-  `${paths.chat.conversation.path}/:chatId`,
-  validateRequest(
-    z.object({
-      params: z.object({
-        chatId: z.string(),
-      }),
-    }),
-  ),
-  chatController.deleteChatRoom,
-);
-
-// Delete All Chat Rooms
-chatRegistry.registerPath({
-  method: "delete",
-  path: `/chat${paths.chat.conversations.path}`,
-  tags: ["Chat", "ChatRoom"],
-  responses: createApiResponse(z.null(), "Success"),
-});
-
-chatRouter.delete(paths.chat.conversations.path, chatController.deleteAllChatRooms);
+chatRouter.delete(`${paths.chat.conversation.path}/:chatId`, chatController.deleteChatRoom);

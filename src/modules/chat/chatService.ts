@@ -280,7 +280,6 @@ class ChatService {
 
       const nextOffset = hasNextPage ? offset + limit : null;
 
-      console.log("messages", messages);
       return ServiceResponse.success(
         "Messages retrieved successfully",
         { messages: paginatedMessages, hasNextPage, nextOffset },
