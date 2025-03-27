@@ -11,6 +11,14 @@ class ChatController {
     handleServiceResponse(serviceResponse, res);
   };
 
+  public deleteChatRoom = async (req: Request, res: Response) => {
+    const { chatId } = req.params;
+    const userId = req.user?.id!;
+
+    const serviceResponse = await chatService.deleteChatRoom({ userId, chatId });
+    handleServiceResponse(serviceResponse, res);
+  };
+
   public getUserChatRooms = async (req: Request, res: Response) => {
     const userId = req.user?.id!;
     const offset = +((req.query.offset as string) || "0");

@@ -116,7 +116,7 @@ class ChatService {
       }
 
       stream = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-3.5-turbo",
         messages: [...history, formattedMessage],
         stream: true,
       });
@@ -173,6 +173,41 @@ class ChatService {
     } catch (error) {
       logger.error("Error creating chat room:", error);
       return ServiceResponse.failure("Failed to create chat room", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async deleteChatRoom({
+    userId,
+    chatId,
+  }: {
+    userId: string;
+    chatId: string;
+  }): Promise<ServiceResponse<{ message: string } | null>> {
+    try {
+      const chatRoom = await chatRepository.getChatRoomById(chatId);
+
+      if (!chatRoom) {
+        return ServiceResponse.failure("Chat room not found", null, StatusCodes.NOT_FOUND);
+      }
+
+      if (chatRoom.userId !== userId) {
+        return ServiceResponse.failure(
+          "You don't have permission to delete this chat room",
+          null,
+          StatusCodes.FORBIDDEN,
+        );
+      }
+
+      await chatRepository.deleteChatRoomById(chatId);
+
+      return ServiceResponse.success(
+        "Chat room deleted successfully",
+        { message: "Chat room deleted successfully" },
+        StatusCodes.OK,
+      );
+    } catch (error) {
+      logger.error(`Error deleting chat room: ${error}`);
+      return ServiceResponse.failure("Failed to delete chat room", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 

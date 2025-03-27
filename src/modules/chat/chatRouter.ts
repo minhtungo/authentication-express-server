@@ -106,3 +106,33 @@ chatRouter.post(
   ),
   chatController.sendMessage,
 );
+
+// Delete Chat Room
+chatRegistry.registerPath({
+  method: "delete",
+  path: `/chat${paths.chat.conversation.path}/:chatId`,
+  tags: ["Chat", "ChatRoom"],
+  request: {
+    params: z.object({
+      chatId: z.string(),
+    }),
+  },
+  responses: createApiResponse(
+    z.object({
+      message: z.string(),
+    }),
+    "Success",
+  ),
+});
+
+chatRouter.delete(
+  `${paths.chat.conversation.path}/:chatId`,
+  validateRequest(
+    z.object({
+      params: z.object({
+        chatId: z.string(),
+      }),
+    }),
+  ),
+  chatController.deleteChatRoom,
+);

@@ -40,6 +40,10 @@ export class ChatRepository {
     });
     return messages;
   }
+
+  async deleteChatRoomById(chatId: string) {
+    await db.delete(chats).where(eq(chats.id, chatId));
+  }
 }
 
 export const chatRepository = new ChatRepository();
