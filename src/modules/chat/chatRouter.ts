@@ -5,6 +5,7 @@ import {
   CreateChatRoomSchema,
   GetChatMessagesRequestSchema,
   GetChatMessagesResponseSchema,
+  GetChatRoomsRequestSchema,
   SendMessageSchema,
 } from "@/modules/chat/chatModel";
 import { validateRequest } from "@/utils/httpHandlers";
@@ -20,7 +21,7 @@ export const chatRouter: Router = express.Router();
 chatRegistry.registerPath({
   method: "post",
   path: `/chat${paths.chat.conversations.path}`,
-  tags: ["Chat"],
+  tags: ["Chat", "ChatRoom"],
   request: {
     body: {
       content: {
@@ -43,17 +44,24 @@ chatRouter.post(
 chatRegistry.registerPath({
   method: "get",
   path: `/chat${paths.chat.conversations.path}`,
-  tags: ["Chat"],
+  tags: ["Chat", "ChatRoom"],
+  request: {
+    query: GetChatRoomsRequestSchema.pick({ query: true }),
+  },
   responses: createApiResponse(z.array(ChatSchema), "Success"),
 });
 
-chatRouter.get(paths.chat.conversations.path, chatController.getUserChatRooms);
+chatRouter.get(
+  paths.chat.conversations.path,
+  validateRequest(GetChatRoomsRequestSchema),
+  chatController.getUserChatRooms,
+);
 
 // Get Chat Room Messages
 chatRegistry.registerPath({
   method: "get",
   path: `/chat${paths.chat.conversation.path}`,
-  tags: ["Chat"],
+  tags: ["Chat", "ChatMessages"],
   request: {
     params: GetChatMessagesRequestSchema.pick({ params: true }),
     query: GetChatMessagesRequestSchema.pick({ query: true }),
@@ -71,7 +79,7 @@ chatRouter.get(
 chatRegistry.registerPath({
   method: "post",
   path: `/chat${paths.chat.conversation.path}`,
-  tags: ["Chat"],
+  tags: ["Chat", "ChatMessages"],
   request: {
     body: {
       content: {

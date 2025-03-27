@@ -13,7 +13,9 @@ class ChatController {
 
   public getUserChatRooms = async (req: Request, res: Response) => {
     const userId = req.user?.id!;
-    const serviceResponse = await chatService.getUserChatRooms(userId);
+    const offset = +((req.query.offset as string) || "0");
+    const limit = +((req.query.limit as string) || "30");
+    const serviceResponse = await chatService.getUserChatRooms({ userId, offset, limit });
     handleServiceResponse(serviceResponse, res);
   };
 
@@ -33,8 +35,6 @@ class ChatController {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
-
-    console.log(chatId, message, attachments, userId);
 
     await chatService.sendMessageAndStream(
       {

@@ -1,3 +1,4 @@
+import { ChatSchema } from "@/db/schemas";
 import { z } from "zod";
 
 export const MessageSchema = z.object({
@@ -31,12 +32,27 @@ export const SendMessageSchema = z.object({
     .optional(),
 });
 
-export const GetChatMessagesSchema = z.object({
-  chatId: z.string().min(1, "Chat room ID is required"),
-  offset: z.number().optional(),
-  limit: z.number().optional(),
+// Chat Room
+export const GetChatRoomsRequestSchema = z.object({
+  query: z.object({
+    offset: z
+      .string()
+      .optional()
+      .transform((val) => (val ? Number.parseInt(val, 10) : 0)),
+    limit: z
+      .string()
+      .optional()
+      .transform((val) => (val ? Number.parseInt(val, 10) : 30)),
+  }),
 });
 
+export const GetChatRoomsResponseSchema = z.object({
+  chatRooms: z.array(ChatSchema),
+  hasNextPage: z.boolean(),
+  nextOffset: z.number().optional(),
+});
+
+// Chat Room Messages
 export const GetChatMessagesRequestSchema = z.object({
   params: z.object({
     chatId: z.string(),

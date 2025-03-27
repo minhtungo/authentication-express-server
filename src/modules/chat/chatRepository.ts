@@ -16,10 +16,12 @@ export class ChatRepository {
     return chatRoom;
   }
 
-  async getChatRoomsByUserId(userId: string) {
+  async getChatRoomsByUserId(userId: string, offset = 0, limit = 30) {
     const chatRooms = await db.query.chats.findMany({
       where: eq(chats.userId, userId),
       orderBy: (chats) => [desc(chats.createdAt)],
+      offset,
+      limit,
     });
     return chatRooms;
   }

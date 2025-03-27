@@ -176,10 +176,29 @@ class ChatService {
     }
   }
 
-  async getUserChatRooms(userId: string): Promise<ServiceResponse<{ chatRooms: Chat[] } | null>> {
+  async getUserChatRooms({
+    userId,
+    offset = 0,
+    limit = 30,
+  }: {
+    userId: string;
+    offset: number;
+    limit: number;
+  }): Promise<ServiceResponse<{ chatRooms: Chat[]; hasNextPage: boolean; nextOffset: number | null } | null>> {
     try {
-      const chatRooms = await chatRepository.getChatRoomsByUserId(userId);
-      return ServiceResponse.success("Chat rooms retrieved successfully", { chatRooms }, StatusCodes.OK);
+      const chatRooms = await chatRepository.getChatRoomsByUserId(userId, offset, limit + 1);
+
+      const hasNextPage = chatRooms.length > limit;
+
+      const paginatedChatRooms = hasNextPage ? chatRooms.slice(0, limit) : chatRooms;
+
+      const nextOffset = hasNextPage ? offset + limit : null;
+
+      return ServiceResponse.success(
+        "Chat rooms retrieved successfully",
+        { chatRooms: paginatedChatRooms, hasNextPage, nextOffset },
+        StatusCodes.OK,
+      );
     } catch (error) {
       logger.error("Error retrieving chat rooms:", error);
       return ServiceResponse.failure("Failed to retrieve chat rooms", null, StatusCodes.INTERNAL_SERVER_ERROR);
