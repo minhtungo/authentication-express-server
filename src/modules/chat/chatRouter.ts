@@ -136,3 +136,13 @@ chatRouter.delete(
   ),
   chatController.deleteChatRoom,
 );
+
+// Delete All Chat Rooms
+chatRegistry.registerPath({
+  method: "delete",
+  path: `/chat${paths.chat.conversations.path}`,
+  tags: ["Chat", "ChatRoom"],
+  responses: createApiResponse(z.null(), "Success"),
+});
+
+chatRouter.delete(paths.chat.conversations.path, chatController.deleteAllChatRooms);

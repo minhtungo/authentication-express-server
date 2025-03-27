@@ -154,6 +154,17 @@ class ChatService {
     }
   }
 
+  async deleteAllChatRooms(userId: string): Promise<ServiceResponse> {
+    try {
+      await chatRepository.deleteAllChatRoomsByUserId(userId);
+
+      return ServiceResponse.success("All chat rooms deleted successfully", null, StatusCodes.OK);
+    } catch (error) {
+      logger.error(`Error deleting all chat rooms: ${error}`);
+      return ServiceResponse.failure("Failed to delete all chat rooms", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   async createChatRoom(userId: string, name: string): Promise<ServiceResponse<{ chatRoom: Chat } | null>> {
     try {
       const chatRoomData: InsertChat = {

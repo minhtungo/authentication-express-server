@@ -44,6 +44,10 @@ export class ChatRepository {
   async deleteChatRoomById(chatId: string) {
     await db.delete(chats).where(eq(chats.id, chatId));
   }
+
+  async deleteAllChatRoomsByUserId(userId: string) {
+    await db.delete(chats).where(eq(chats.userId, userId));
+  }
 }
 
 export const chatRepository = new ChatRepository();
