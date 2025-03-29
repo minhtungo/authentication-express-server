@@ -19,7 +19,7 @@ uploadRegistry.registerPath({
       content: {
         "application/json": {
           schema: z.object({
-            filename: z.string(),
+            fileName: z.string(),
           }),
         },
       },
@@ -50,8 +50,4 @@ uploadRegistry.registerPath({
   responses: createApiResponse(z.object({}), "Success"),
 });
 
-uploadRouter.post(
-  paths.upload.confirm.path,
-  validateRequest(z.object({ body: ConfirmUploadSchema })),
-  uploadController.confirmUpload,
-);
+uploadRouter.post(paths.upload.confirm.path, uploadController.confirmUpload);

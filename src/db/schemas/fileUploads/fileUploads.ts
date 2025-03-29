@@ -6,8 +6,8 @@ export const fileUploads = pgTable("fileUploads", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   key: text().notNull(), // S3/MinIO file key
-  filename: text().notNull(),
-  mimetype: text().notNull(),
+  fileName: text().notNull(),
+  mimeType: text().notNull(),
   size: text(),
   url: text(),
   userId: text()

@@ -1,15 +1,19 @@
 import { ChatSchema } from "@/db/schemas";
 import { z } from "zod";
 
+export const MessageAttachmentSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  fileName: z.string(),
+  mimeType: z.string(),
+  size: z.number(),
+});
+
+export type MessageAttachment = z.infer<typeof MessageAttachmentSchema>;
+
 export const MessageSchema = z.object({
   message: z.string().min(1),
-  attachments: z
-    .object({
-      content: z.string(),
-      filename: z.string(),
-      mimetype: z.string(),
-    })
-    .optional(),
+  attachments: z.array(MessageAttachmentSchema).optional(),
 });
 
 export const CreateChatRoomSchema = z.object({
@@ -17,19 +21,9 @@ export const CreateChatRoomSchema = z.object({
 });
 
 export const SendMessageSchema = z.object({
-  chatId: z.string().min(1, "Chat room ID is required").optional(),
-  message: z.string().min(1, "Message content is required"),
-  attachments: z
-    .array(
-      z
-        .object({
-          content: z.string(),
-          filename: z.string(),
-          mimetype: z.string(),
-        })
-        .optional(),
-    )
-    .optional(),
+  chatId: z.string({ required_error: "Chat room ID is required" }).optional(),
+  message: z.string({ required_error: "Message content is required" }),
+  attachments: z.array(MessageAttachmentSchema).optional(),
 });
 
 // Chat Room

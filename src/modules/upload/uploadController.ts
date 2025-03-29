@@ -4,15 +4,15 @@ import type { Request, RequestHandler, Response } from "express";
 
 class UploadController {
   public getPresignedUrl: RequestHandler = async (req: Request, res: Response) => {
-    const { filename } = req.body;
-    const serviceResponse = await uploadService.getPresignedUrl(filename);
+    const { fileName } = req.body;
+    const serviceResponse = await uploadService.getPresignedUrl(fileName);
     handleServiceResponse(serviceResponse, res);
   };
 
   public confirmUpload: RequestHandler = async (req: Request, res: Response) => {
-    const { key, filename, mimetype, size } = req.body;
+    const { key, fileName, mimeType, size } = req.body;
     const userId = req.user?.id!;
-    const serviceResponse = await uploadService.confirmUpload({ key, filename, mimetype, size }, userId);
+    const serviceResponse = await uploadService.confirmUpload({ key, fileName, mimeType, size }, userId);
     handleServiceResponse(serviceResponse, res);
   };
 

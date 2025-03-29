@@ -2,8 +2,10 @@ import { env } from "@/config/env";
 import type { ChatMessage } from "@/db/schemas";
 import type { Chat, InsertChat } from "@/db/schemas/chats/validation";
 import { ServiceResponse } from "@/lib/serviceResponse";
-import { chatRepository } from "@/modules/chat/chatRepository";
+import type { MessageAttachment } from "@/modules/chat/chatModel";
+import { ChatRepository } from "@/modules/chat/chatRepository";
 import { logger } from "@/utils/logger";
+import { convertFileUrlToBase64, getFileUrl } from "@/utils/upload";
 import type { Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { OpenAI } from "openai";
@@ -11,11 +13,13 @@ import type { Stream } from "openai/streaming";
 
 class ChatService {
   private openai: OpenAI;
+  private chatRepository: ChatRepository;
 
   constructor() {
     this.openai = new OpenAI({
       apiKey: env.OPENAI_API_KEY,
     });
+    this.chatRepository = new ChatRepository();
   }
 
   async sendMessageAndStream(
@@ -27,7 +31,7 @@ class ChatService {
     }: {
       chatId?: string;
       message: string;
-      attachments?: { content: string; filename: string; mimetype: string }[];
+      attachments?: MessageAttachment[];
       userId: string;
     },
     res: Response,
@@ -53,12 +57,12 @@ class ChatService {
           userId,
         };
 
-        chatRoom = await chatRepository.createChatRoom(chatRoomData);
+        chatRoom = await this.chatRepository.createChatRoom(chatRoomData);
         chatId = chatRoom.id;
 
         res.write(`event: chatCreated\ndata: ${JSON.stringify({ chatId: chatRoom.id, chatName: chatRoom.name })}\n\n`);
       } else {
-        chatRoom = await chatRepository.getChatRoomById(chatId);
+        chatRoom = await this.chatRepository.getChatRoomById(chatId);
 
         if (!chatRoom) {
           throw new Error("Chat room not found");
@@ -69,54 +73,64 @@ class ChatService {
         }
       }
 
+      const userMessage = await this.chatRepository.createChatMessage({
+        chatId,
+        userId,
+        content: message,
+        role: "user",
+      });
+
       try {
-        const userMessage = await chatRepository.createChatMessage({
-          chatId,
-          userId,
-          content: message,
-          role: "user",
-        });
+        if (attachments && attachments.length > 0) {
+          await Promise.all(
+            attachments?.map(async (attachment) => {
+              return this.chatRepository.createMessageAttachment({
+                messageId: userMessage.id,
+                fileUploadId: attachment.id,
+              });
+            }) ?? [],
+          );
+        }
       } catch (error) {
-        console.log("error userMessage", error);
+        logger.error("Error creating message attachments:", error);
       }
 
-      const previousMessages = await chatRepository.getChatMessagesByChatId(chatId);
-
+      const previousMessages = await this.chatRepository.getChatMessagesByChatId(chatId);
       const history = previousMessages.slice(-10).map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
 
       let formattedMessage: any = { role: "user", content: message };
-
       if (attachments) {
         formattedMessage = {
           role: "user",
           content: [
             { type: "text", text: message },
-            ...attachments.map((attachment) =>
-              attachment.mimetype.startsWith("image/")
+            ...attachments.map(async (attachment) => {
+              const fileData = await convertFileUrlToBase64(getFileUrl(attachment.key));
+              return attachment.mimeType.startsWith("image/")
                 ? {
                     type: "image_url",
                     image_url: {
-                      url: attachment.content,
+                      url: fileData,
                       detail: "high",
                     },
                   }
                 : {
                     type: "file",
                     file: {
-                      file_data: attachment.content,
-                      filename: attachment.filename,
+                      file_data: fileData,
+                      fileName: attachment.fileName,
                     },
-                  },
-            ),
+                  };
+            }),
           ],
         };
       }
 
       stream = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [...history, formattedMessage],
         stream: true,
       });
@@ -133,7 +147,7 @@ class ChatService {
         }
       }
 
-      await chatRepository.createChatMessage({
+      await this.chatRepository.createChatMessage({
         chatId,
         userId,
         content: assistantResponse,
@@ -156,7 +170,7 @@ class ChatService {
 
   async deleteAllChatRooms(userId: string): Promise<ServiceResponse> {
     try {
-      await chatRepository.deleteAllChatRoomsByUserId(userId);
+      await this.chatRepository.deleteAllChatRoomsByUserId(userId);
 
       return ServiceResponse.success("All chat rooms deleted successfully", null, StatusCodes.OK);
     } catch (error) {
@@ -172,7 +186,7 @@ class ChatService {
         userId,
       };
 
-      const newChatRoom = await chatRepository.createChatRoom(chatRoomData);
+      const newChatRoom = await this.chatRepository.createChatRoom(chatRoomData);
 
       return ServiceResponse.success(
         "Chat room created successfully",
@@ -195,7 +209,7 @@ class ChatService {
     chatId: string;
   }): Promise<ServiceResponse<{ message: string } | null>> {
     try {
-      const chatRoom = await chatRepository.getChatRoomById(chatId);
+      const chatRoom = await this.chatRepository.getChatRoomById(chatId);
 
       if (!chatRoom) {
         return ServiceResponse.failure("Chat room not found", null, StatusCodes.NOT_FOUND);
@@ -209,7 +223,7 @@ class ChatService {
         );
       }
 
-      await chatRepository.deleteChatRoomById(chatId);
+      await this.chatRepository.deleteChatRoomById(chatId);
 
       return ServiceResponse.success(
         "Chat room deleted successfully",
@@ -232,7 +246,7 @@ class ChatService {
     limit: number;
   }): Promise<ServiceResponse<{ chatRooms: Chat[]; hasNextPage: boolean; nextOffset: number | null } | null>> {
     try {
-      const chatRooms = await chatRepository.getChatRoomsByUserId(userId, offset, limit + 1);
+      const chatRooms = await this.chatRepository.getChatRoomsByUserId(userId, offset, limit + 1);
 
       const hasNextPage = chatRooms.length > limit;
 
@@ -263,7 +277,7 @@ class ChatService {
     limit: number;
   }): Promise<ServiceResponse<{ messages: ChatMessage[]; hasNextPage: boolean; nextOffset: number | null } | null>> {
     try {
-      const chatRoom = await chatRepository.getChatRoomById(chatId);
+      const chatRoom = await this.chatRepository.getChatRoomById(chatId);
       if (!chatRoom) {
         return ServiceResponse.failure("Chat room not found", null, StatusCodes.NOT_FOUND);
       }
@@ -272,11 +286,26 @@ class ChatService {
         return ServiceResponse.failure("You don't have access to this chat room", null, StatusCodes.FORBIDDEN);
       }
 
-      const messages = await chatRepository.getChatMessagesByChatId(chatId, offset, limit + 1);
+      try {
+      } catch (error) {}
+      const messages = await this.chatRepository.getChatMessagesByChatId(chatId, offset, limit + 1);
 
       const hasNextPage = messages.length > limit;
 
       const paginatedMessages = hasNextPage ? messages.slice(0, limit) : messages;
+
+      const messagesWithFormattedAttachments = paginatedMessages.map((message) => {
+        if (!message.attachments || message.attachments.length === 0) {
+          return message;
+        }
+
+        return {
+          ...message,
+          attachments: message.attachments.map((attachment) => ({
+            ...attachment,
+          })),
+        };
+      });
 
       const nextOffset = hasNextPage ? offset + limit : null;
 

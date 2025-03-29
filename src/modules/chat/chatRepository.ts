@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { type InsertChatMessage, chatMessages, chats } from "@/db/schemas";
 import type { InsertChat } from "@/db/schemas/chats/validation";
+import { type InsertMessageAttachment, messageAttachments } from "@/db/schemas/messageAttachments";
 import { desc, eq } from "drizzle-orm";
 
 export class ChatRepository {
@@ -37,16 +38,23 @@ export class ChatRepository {
       orderBy: [desc(chatMessages.createdAt)],
       offset,
       limit,
+      with: {
+        attachments: true,
+      },
     });
     return messages;
   }
 
   async deleteChatRoomById(chatId: string) {
-    await db.delete(chats).where(eq(chats.id, chatId));
+    return db.delete(chats).where(eq(chats.id, chatId));
   }
 
   async deleteAllChatRoomsByUserId(userId: string) {
-    await db.delete(chats).where(eq(chats.userId, userId));
+    return db.delete(chats).where(eq(chats.userId, userId));
+  }
+
+  async createMessageAttachment(data: InsertMessageAttachment) {
+    return db.insert(messageAttachments).values(data).returning();
   }
 }
 

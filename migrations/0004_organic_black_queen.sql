@@ -1,0 +1,1 @@
+ALTER TABLE "fileUploads" RENAME COLUMN "mimetype" TO "mimeType";
