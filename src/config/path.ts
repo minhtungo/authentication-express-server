@@ -44,6 +44,9 @@ export const paths = {
     profile: {
       path: "/profile",
     },
+    uploads: {
+      path: "/uploads",
+    },
   },
   chat: {
     conversations: {

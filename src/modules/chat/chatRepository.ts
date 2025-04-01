@@ -20,7 +20,7 @@ export class ChatRepository {
   async getChatRoomsByUserId(userId: string, offset = 0, limit = 30) {
     const chatRooms = await db.query.chats.findMany({
       where: eq(chats.userId, userId),
-      orderBy: (chats) => [desc(chats.createdAt)],
+      orderBy: (chats) => [desc(chats.updatedAt)],
       offset,
       limit,
     });
@@ -39,10 +39,27 @@ export class ChatRepository {
       offset,
       limit,
       with: {
-        attachments: true,
+        attachments: {
+          with: {
+            fileUpload: true,
+          },
+        },
       },
     });
-    return messages;
+
+    const transformedMessages = messages.map((message) => {
+      const flattenedAttachments =
+        message.attachments?.map((attachment) => {
+          return attachment.fileUpload;
+        }) || [];
+
+      return {
+        ...message,
+        attachments: flattenedAttachments,
+      };
+    });
+
+    return transformedMessages;
   }
 
   async deleteChatRoomById(chatId: string) {

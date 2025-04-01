@@ -10,6 +10,9 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { StatusCodes } from "http-status-codes";
 import { v4 as uuidv4 } from "uuid";
 
+export const DEFAULT_GET_USER_UPLOADS_OFFSET = 0;
+export const DEFAULT_GET_USER_UPLOADS_LIMIT = 30;
+
 export class UploadService {
   private uploadRepository: UploadRepository;
   private s3Client: S3Client;
@@ -94,10 +97,22 @@ export class UploadService {
     }
   }
 
-  async getUserUploads(userId: string, offset = 0, limit = 30) {
+  async getUserUploads(
+    userId: string,
+    offset: number = DEFAULT_GET_USER_UPLOADS_OFFSET,
+    limit: number = DEFAULT_GET_USER_UPLOADS_LIMIT,
+  ) {
     try {
-      const uploads = await this.uploadRepository.getFileUploadsByUserId(userId, offset, limit);
-      return ServiceResponse.success("User uploads retrieved successfully", uploads);
+      const uploads = await this.uploadRepository.getFileUploadsByUserId(userId, offset, limit + 1);
+      const hasNextPage = uploads.length > limit;
+      const paginatedUploads = hasNextPage ? uploads.slice(0, limit) : uploads;
+      const nextOffset = hasNextPage ? offset + limit : null;
+
+      return ServiceResponse.success("User uploads retrieved successfully", {
+        uploads: paginatedUploads,
+        hasNextPage,
+        nextOffset,
+      });
     } catch (ex) {
       const errorMessage = `Error getting user uploads: ${(ex as Error).message}`;
       logger.error(errorMessage);

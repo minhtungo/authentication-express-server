@@ -80,19 +80,15 @@ class ChatService {
         role: "user",
       });
 
-      try {
-        if (attachments && attachments.length > 0) {
-          await Promise.all(
-            attachments?.map(async (attachment) => {
-              return this.chatRepository.createMessageAttachment({
-                messageId: userMessage.id,
-                fileUploadId: attachment.id,
-              });
-            }) ?? [],
-          );
-        }
-      } catch (error) {
-        logger.error("Error creating message attachments:", error);
+      if (attachments && attachments.length > 0) {
+        await Promise.all(
+          attachments?.map(async (attachment) => {
+            return this.chatRepository.createMessageAttachment({
+              messageId: userMessage.id,
+              fileUploadId: attachment.id,
+            });
+          }) ?? [],
+        );
       }
 
       const previousMessages = await this.chatRepository.getChatMessagesByChatId(chatId);
@@ -293,19 +289,6 @@ class ChatService {
       const hasNextPage = messages.length > limit;
 
       const paginatedMessages = hasNextPage ? messages.slice(0, limit) : messages;
-
-      const messagesWithFormattedAttachments = paginatedMessages.map((message) => {
-        if (!message.attachments || message.attachments.length === 0) {
-          return message;
-        }
-
-        return {
-          ...message,
-          attachments: message.attachments.map((attachment) => ({
-            ...attachment,
-          })),
-        };
-      });
 
       const nextOffset = hasNextPage ? offset + limit : null;
 
