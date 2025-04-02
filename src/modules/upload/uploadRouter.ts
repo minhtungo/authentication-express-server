@@ -1,13 +1,7 @@
 import { paths } from "@/config/path";
-import { FileUploadSchema } from "@/db/schemas";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { uploadController } from "@/modules/upload/uploadController";
-import {
-  ConfirmUploadSchema,
-  GetUserUploadsRequestSchema,
-  GetUserUploadsResponseSchema,
-  PresignedUrlSchema,
-} from "@/modules/upload/uploadModel";
+import { ConfirmUploadSchema, DeleteUploadsSchema, PresignedUrlSchema } from "@/modules/upload/uploadModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";

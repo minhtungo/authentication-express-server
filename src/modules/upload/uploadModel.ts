@@ -31,3 +31,13 @@ export const GetUserUploadsResponseSchema = z.object({
   hasNextPage: z.boolean(),
   nextOffset: z.number().nullable(),
 });
+
+export const DeleteUploadsSchema = z.object({
+  fileIds: z
+    .array(
+      z.string({
+        required_error: "File IDs are required",
+      }),
+    )
+    .min(1, "At least one file ID is required"),
+});

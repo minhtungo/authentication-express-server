@@ -149,6 +149,53 @@ export class UploadService {
       );
     }
   }
+
+  async deleteUploads(fileIds: string[], userId: string) {
+    try {
+      // Process each file deletion and collect results
+      const results = await Promise.all(
+        fileIds.map(async (fileId) => {
+          try {
+            const fileUpload = await this.uploadRepository.getFileUploadById(fileId);
+
+            if (!fileUpload) {
+              return { fileId, success: false, error: "File not found" };
+            }
+
+            if (fileUpload.userId !== userId) {
+              return { fileId, success: false, error: "Unauthorized" };
+            }
+
+            await this.uploadRepository.deleteFileUpload(fileId);
+            return { fileId, success: true };
+          } catch (error) {
+            return { fileId, success: false, error: (error as Error).message };
+          }
+        }),
+      );
+
+      const successful = results.filter((r) => r.success).map((r) => r.fileId);
+      const failed = results
+        .filter((r) => !r.success)
+        .map((r) => ({
+          fileId: r.fileId,
+          error: r.error,
+        }));
+
+      return ServiceResponse.success(`Successfully deleted ${successful.length} of ${fileIds.length} files`, {
+        successful,
+        failed,
+      });
+    } catch (ex) {
+      const errorMessage = `Error deleting files: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while deleting files.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
 
 export const uploadService = new UploadService();

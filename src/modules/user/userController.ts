@@ -20,6 +20,14 @@ class UserController {
 
     handleServiceResponse(serviceResponse, res);
   }
+
+  async deleteUploads(req: Request, res: Response) {
+    const userId = req.user?.id!;
+    const { fileIds } = req.body;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const serviceResponse = await uploadService.deleteUploads(fileIds, userId);
+    handleServiceResponse(serviceResponse, res);
+  }
 }
 
 export const userController = new UserController();
