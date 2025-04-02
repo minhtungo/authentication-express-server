@@ -47,6 +47,9 @@ export const paths = {
     uploads: {
       path: "/uploads",
     },
+    changePassword: {
+      path: "/change-password",
+    },
   },
   chat: {
     conversations: {

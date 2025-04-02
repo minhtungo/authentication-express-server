@@ -3,7 +3,7 @@ import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { DeleteUploadsSchema, GetUserUploadsResponseSchema } from "@/modules/upload/uploadModel";
 import { GetUserUploadsRequestSchema } from "@/modules/upload/uploadModel";
 import { userController } from "@/modules/user/userController";
-import { UpdateProfileSchema } from "@/modules/user/userModel";
+import { ChangePasswordSchema, UpdateProfileSchema } from "@/modules/user/userModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
@@ -12,6 +12,7 @@ import { z } from "zod";
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();
 
+// Get user profile
 userRegistry.registerPath({
   method: "get",
   path: `/user/${paths.user.me.path}`,
@@ -34,6 +35,7 @@ userRegistry.registerPath({
 
 userRouter.get(paths.user.uploads.path, userController.getUserUploads);
 
+// Delete user uploads
 userRegistry.registerPath({
   method: "delete",
   path: "/user/uploads",
@@ -73,4 +75,27 @@ userRouter.put(
   paths.user.profile.path,
   validateRequest(z.object({ body: UpdateProfileSchema })),
   userController.updateProfile,
+);
+
+// Change Password
+userRegistry.registerPath({
+  method: "put",
+  path: `/user/${paths.user.changePassword.path}`,
+  tags: ["User"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: ChangePasswordSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+userRouter.put(
+  paths.user.changePassword.path,
+  validateRequest(z.object({ body: ChangePasswordSchema })),
+  userController.changePassword,
 );

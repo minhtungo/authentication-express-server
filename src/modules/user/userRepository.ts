@@ -13,6 +13,10 @@ export class UserRepository {
 
     return updatedUser;
   }
+
+  async updateUserPassword(userId: string, newPassword: string) {
+    await db.update(users).set({ password: newPassword }).where(eq(users.id, userId));
+  }
 }
 
 export const userRepository = new UserRepository();
