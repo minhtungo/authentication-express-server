@@ -1,8 +1,8 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { userSettings } from "./userSettings";
 
-export const insertUserSettingSchema = createInsertSchema(userSettings);
-export const UserSettingSchema = createSelectSchema(userSettings);
+export const insertUserSettingsSchema = createInsertSchema(userSettings);
+export const UserSettingsSchema = createSelectSchema(userSettings);
 
-export type InsertUserSetting = typeof userSettings.$inferInsert;
-export type UserSetting = typeof userSettings.$inferSelect;
+export type InsertUserSettings = typeof userSettings.$inferInsert;
+export type UserSettings = typeof userSettings.$inferSelect;

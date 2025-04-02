@@ -12,6 +12,23 @@ export class UserService {
     this.userRepository = repository;
   }
 
+  async getMe(userId: string) {
+    const user = await this.userRepository.getUserById(userId);
+
+    if (!user) {
+      return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
+    }
+
+    const userSettings = await this.userRepository.getUserSettingsByUserId(userId);
+
+    const userWithSettings = {
+      ...user,
+      settings: userSettings || {},
+    };
+
+    return ServiceResponse.success("User fetched successfully", userWithSettings, StatusCodes.OK);
+  }
+
   async getUserById(id: string) {
     try {
       const user = await this.userRepository.getUserById(id);

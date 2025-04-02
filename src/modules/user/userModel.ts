@@ -1,5 +1,10 @@
+import { UserSchema, UserSettingsSchema } from "@/db/schemas";
 import { commonValidations } from "@/utils/commonValidation";
 import { z } from "zod";
+
+export const UserWithSettingsSchema = UserSchema.omit({ password: true }).extend({
+  settings: UserSettingsSchema,
+});
 
 export const UpdateProfileSchema = z.object({
   name: z.string().optional(),

@@ -1,10 +1,15 @@
 import { paths } from "@/config/path";
-import { UserSettingSchema } from "@/db/schemas/userSettings/validation";
+import { UserSettingsSchema } from "@/db/schemas";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { DeleteUploadsSchema, GetUserUploadsResponseSchema } from "@/modules/upload/uploadModel";
 import { GetUserUploadsRequestSchema } from "@/modules/upload/uploadModel";
 import { userController } from "@/modules/user/userController";
-import { ChangePasswordSchema, UpdateProfileSchema, UpdateUserSettingsSchema } from "@/modules/user/userModel";
+import {
+  ChangePasswordSchema,
+  UpdateProfileSchema,
+  UpdateUserSettingsSchema,
+  UserWithSettingsSchema,
+} from "@/modules/user/userModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
@@ -18,7 +23,7 @@ userRegistry.registerPath({
   method: "get",
   path: `/user/${paths.user.me.path}`,
   tags: ["User"],
-  responses: createApiResponse(z.object({}), "Success"),
+  responses: createApiResponse(UserWithSettingsSchema, "Success"),
 });
 
 userRouter.get(paths.user.me.path, userController.getMe);
@@ -129,7 +134,7 @@ userRegistry.registerPath({
   method: "get",
   path: `/user/${paths.user.settings.path}`,
   tags: ["User"],
-  responses: createApiResponse(UserSettingSchema, "Success"),
+  responses: createApiResponse(UserSettingsSchema, "Success"),
 });
 
 userRouter.get(paths.user.settings.path, userController.getUserSettings);
