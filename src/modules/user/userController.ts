@@ -28,6 +28,15 @@ class UserController {
     const serviceResponse = await uploadService.deleteUploads(fileIds, userId);
     handleServiceResponse(serviceResponse, res);
   }
+
+  async updateProfile(req: Request, res: Response) {
+    const userId = req.user?.id!;
+    const profileData = req.body;
+
+    const serviceResponse = await userService.updateProfile(userId, profileData);
+
+    handleServiceResponse(serviceResponse, res);
+  }
 }
 
 export const userController = new UserController();

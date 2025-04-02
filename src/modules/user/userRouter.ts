@@ -3,6 +3,8 @@ import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { DeleteUploadsSchema, GetUserUploadsResponseSchema } from "@/modules/upload/uploadModel";
 import { GetUserUploadsRequestSchema } from "@/modules/upload/uploadModel";
 import { userController } from "@/modules/user/userController";
+import { UpdateProfileSchema } from "@/modules/user/userModel";
+import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
 import { z } from "zod";
@@ -49,3 +51,26 @@ userRegistry.registerPath({
 });
 
 userRouter.delete(paths.user.uploads.path, userController.deleteUploads);
+
+// Update user profile
+userRegistry.registerPath({
+  method: "put",
+  path: `/user/${paths.user.profile.path}`,
+  tags: ["User"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: UpdateProfileSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+userRouter.put(
+  paths.user.profile.path,
+  validateRequest(z.object({ body: UpdateProfileSchema })),
+  userController.updateProfile,
+);

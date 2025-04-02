@@ -25,6 +25,26 @@ export class UserService {
       );
     }
   }
+
+  async updateProfile(userId: string, profileData: { name?: string; image?: string }) {
+    try {
+      const user = await this.userRepository.updateUserProfile(userId, profileData);
+
+      if (!user) {
+        return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
+      }
+
+      return ServiceResponse.success("Profile updated successfully", user, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error updating user profile: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while updating profile.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
 
 export const userService = new UserService();
