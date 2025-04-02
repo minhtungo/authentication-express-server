@@ -8,6 +8,6 @@ export const userSettings = pgTable("userSettings", {
   userId: text()
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  theme: varchar({ enum: ["light", "dark"] }).default("dark"),
+  theme: varchar({ enum: ["light", "dark", "system"] }).default("system"),
   isTwoFactorEnabled: boolean().default(false),
 });

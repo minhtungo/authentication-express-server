@@ -1,9 +1,10 @@
 import { paths } from "@/config/path";
+import { UserSettingSchema } from "@/db/schemas/userSettings/validation";
 import { createApiResponse } from "@/docs/openAPIResponseBuilders";
 import { DeleteUploadsSchema, GetUserUploadsResponseSchema } from "@/modules/upload/uploadModel";
 import { GetUserUploadsRequestSchema } from "@/modules/upload/uploadModel";
 import { userController } from "@/modules/user/userController";
-import { ChangePasswordSchema, UpdateProfileSchema } from "@/modules/user/userModel";
+import { ChangePasswordSchema, UpdateProfileSchema, UpdateUserSettingsSchema } from "@/modules/user/userModel";
 import { validateRequest } from "@/utils/httpHandlers";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
@@ -99,3 +100,36 @@ userRouter.put(
   validateRequest(z.object({ body: ChangePasswordSchema })),
   userController.changePassword,
 );
+
+// Update user settings
+userRegistry.registerPath({
+  method: "put",
+  path: `/user/${paths.user.settings.path}`,
+  tags: ["User"],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: UpdateUserSettingsSchema,
+        },
+      },
+    },
+  },
+  responses: createApiResponse(z.object({}), "Success"),
+});
+
+userRouter.put(
+  paths.user.settings.path,
+  validateRequest(z.object({ body: UpdateUserSettingsSchema })),
+  userController.updateUserSettings,
+);
+
+//
+userRegistry.registerPath({
+  method: "get",
+  path: `/user/${paths.user.settings.path}`,
+  tags: ["User"],
+  responses: createApiResponse(UserSettingSchema, "Success"),
+});
+
+userRouter.get(paths.user.settings.path, userController.getUserSettings);

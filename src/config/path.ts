@@ -38,8 +38,8 @@ export const paths = {
     me: {
       path: "/me",
     },
-    preferences: {
-      path: "/preferences",
+    settings: {
+      path: "/settings",
     },
     profile: {
       path: "/profile",

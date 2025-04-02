@@ -45,6 +45,23 @@ class UserController {
     const serviceResponse = await userService.changePassword(userId, currentPassword, newPassword);
     handleServiceResponse(serviceResponse, res);
   }
+
+  async getUserSettings(req: Request, res: Response) {
+    const userId = req.user?.id!;
+
+    const serviceResponse = await userService.getUserSettings(userId);
+
+    handleServiceResponse(serviceResponse, res);
+  }
+
+  async updateUserSettings(req: Request, res: Response) {
+    const userId = req.user?.id!;
+    const settingsData = req.body;
+
+    const serviceResponse = await userService.updateUserSettings(userId, settingsData);
+
+    handleServiceResponse(serviceResponse, res);
+  }
 }
 
 export const userController = new UserController();

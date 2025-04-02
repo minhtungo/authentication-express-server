@@ -1,5 +1,6 @@
 import { verifyPassword } from "@/lib/password";
 import { ServiceResponse } from "@/lib/serviceResponse";
+import type { UpdateUserSettings } from "@/modules/user/userModel";
 import { UserRepository } from "@/modules/user/userRepository";
 import { logger } from "@/utils/logger";
 import { StatusCodes } from "http-status-codes";
@@ -76,6 +77,48 @@ export class UserService {
       logger.error(errorMessage);
       return ServiceResponse.failure(
         "An error occurred while changing password",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async updateUserSettings(userId: string, settingsData: UpdateUserSettings) {
+    try {
+      const existingSettings = await this.userRepository.getUserSettingsByUserId(userId);
+
+      if (!existingSettings) {
+        return ServiceResponse.failure("User settings not found", null, StatusCodes.NOT_FOUND);
+      }
+
+      const updatedSettings = await this.userRepository.updateUserSettings(userId, settingsData);
+
+      return ServiceResponse.success("Settings updated successfully", updatedSettings, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error updating user settings: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while updating settings.",
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getUserSettings(userId: string) {
+    try {
+      const settings = await this.userRepository.getUserSettingsByUserId(userId);
+
+      if (!settings) {
+        return ServiceResponse.failure("User settings not found", null, StatusCodes.NOT_FOUND);
+      }
+
+      return ServiceResponse.success("Settings retrieved successfully", settings, StatusCodes.OK);
+    } catch (ex) {
+      const errorMessage = `Error retrieving user settings: ${(ex as Error).message}`;
+      logger.error(errorMessage);
+      return ServiceResponse.failure(
+        "An error occurred while retrieving settings.",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR,
       );

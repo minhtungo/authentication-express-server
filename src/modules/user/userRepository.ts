@@ -1,6 +1,6 @@
 import { db } from "@/db";
-import { users } from "@/db/schemas";
-import type { UpdateProfile } from "@/modules/user/userModel";
+import { userSettings, users } from "@/db/schemas";
+import type { UpdateProfile, UpdateUserSettings } from "@/modules/user/userModel";
 import { eq } from "drizzle-orm";
 
 export class UserRepository {
@@ -16,6 +16,24 @@ export class UserRepository {
 
   async updateUserPassword(userId: string, newPassword: string) {
     await db.update(users).set({ password: newPassword }).where(eq(users.id, userId));
+  }
+
+  async getUserSettingsByUserId(userId: string) {
+    const settings = await db.query.userSettings.findFirst({
+      where: eq(userSettings.userId, userId),
+    });
+
+    return settings;
+  }
+
+  async updateUserSettings(userId: string, data: UpdateUserSettings) {
+    const [updatedSettings] = await db
+      .update(userSettings)
+      .set(data)
+      .where(eq(userSettings.userId, userId))
+      .returning();
+
+    return updatedSettings;
   }
 }
 
