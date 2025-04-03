@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { userSettings, users } from "@/db/schemas";
+import { hashPassword } from "@/lib/password";
 import type { UpdateProfile, UpdateUserSettings } from "@/modules/user/userModel";
 import { eq } from "drizzle-orm";
 
@@ -15,7 +16,8 @@ export class UserRepository {
   }
 
   async updateUserPassword(userId: string, newPassword: string) {
-    await db.update(users).set({ password: newPassword }).where(eq(users.id, userId));
+    const hashedPassword = await hashPassword(newPassword);
+    await db.update(users).set({ password: hashedPassword }).where(eq(users.id, userId));
   }
 
   async getUserSettingsByUserId(userId: string) {

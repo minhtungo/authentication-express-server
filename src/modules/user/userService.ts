@@ -68,7 +68,6 @@ export class UserService {
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<ServiceResponse> {
     try {
       const user = await this.userRepository.getUserById(userId);
-
       if (!user || !user.password) {
         return ServiceResponse.failure("User not found", null, StatusCodes.NOT_FOUND);
       }
@@ -85,7 +84,6 @@ export class UserService {
           StatusCodes.BAD_REQUEST,
         );
       }
-
       await this.userRepository.updateUserPassword(userId, newPassword);
 
       return ServiceResponse.success("Password changed successfully", null, StatusCodes.OK);

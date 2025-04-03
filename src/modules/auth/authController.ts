@@ -26,10 +26,11 @@ class AuthController {
 
   public signOut: RequestHandler = async (req: Request, res: Response) => {
     const refreshToken = req.cookies[appConfig.token.refreshToken.cookieName];
+    console.log(refreshToken);
 
     await authService.signOut(refreshToken);
     res.clearCookie(appConfig.token.refreshToken.cookieName);
-    res.redirect(`${env.APP_ORIGIN}`);
+    res.redirect(`${env.APP_ORIGIN}/`);
   };
 
   public verifyEmail: RequestHandler = async (req: Request, res: Response) => {

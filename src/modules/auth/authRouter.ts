@@ -146,7 +146,7 @@ authRouter.get(paths.auth.googleOAuth.callback.path, authController.handleOauthS
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/sign-out",
+  path: "/auth/signout",
   tags: ["Auth"],
   responses: createApiResponse(z.object({}), "Success"),
 });

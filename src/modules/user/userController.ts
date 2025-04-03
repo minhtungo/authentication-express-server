@@ -41,7 +41,6 @@ class UserController {
   async changePassword(req: Request, res: Response) {
     const userId = req.user?.id!;
     const { currentPassword, newPassword } = req.body;
-
     const serviceResponse = await userService.changePassword(userId, currentPassword, newPassword);
     handleServiceResponse(serviceResponse, res);
   }
