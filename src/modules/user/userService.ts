@@ -21,9 +21,14 @@ export class UserService {
 
     const userSettings = await this.userRepository.getUserSettingsByUserId(userId);
 
+    const { password, ...userWithoutPassword } = user;
+
     const userWithSettings = {
-      ...user,
-      settings: userSettings || {},
+      ...userWithoutPassword,
+      settings: {
+        isTwoFactorEnabled: userSettings?.isTwoFactorEnabled,
+        theme: userSettings?.theme,
+      },
     };
 
     return ServiceResponse.success("User fetched successfully", userWithSettings, StatusCodes.OK);

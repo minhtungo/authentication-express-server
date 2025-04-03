@@ -3,7 +3,7 @@ import { commonValidations } from "@/utils/commonValidation";
 import { z } from "zod";
 
 export const UserWithSettingsSchema = UserSchema.omit({ password: true }).extend({
-  settings: UserSettingsSchema,
+  settings: UserSettingsSchema.pick({ theme: true, isTwoFactorEnabled: true }),
 });
 
 export const UpdateProfileSchema = z.object({

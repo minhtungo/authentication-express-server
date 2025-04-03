@@ -5,7 +5,7 @@ import type { Request, Response } from "express";
 
 class UserController {
   async getMe(req: Request, res: Response) {
-    const serviceResponse = await userService.getUserById(req?.user?.id!);
+    const serviceResponse = await userService.getMe(req?.user?.id!);
 
     handleServiceResponse(serviceResponse, res);
   }
