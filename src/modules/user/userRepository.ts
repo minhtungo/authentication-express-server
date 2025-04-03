@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { userSettings, users } from "@/db/schemas";
+import { type User, userSettings, users } from "@/db/schemas";
 import { hashPassword } from "@/lib/password";
 import type { UpdateProfile, UpdateUserSettings } from "@/modules/user/userModel";
 import { eq } from "drizzle-orm";
@@ -9,7 +9,7 @@ export class UserRepository {
     return db.query.users.findFirst({ where: eq(users.id, id) });
   }
 
-  async updateUserProfile(userId: string, data: UpdateProfile) {
+  async updateUserProfile(userId: string, data: Partial<User>) {
     const [updatedUser] = await db.update(users).set(data).where(eq(users.id, userId)).returning();
 
     return updatedUser;

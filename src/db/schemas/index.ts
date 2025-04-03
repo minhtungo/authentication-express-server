@@ -12,6 +12,7 @@ export * from "./chats";
 export * from "./chatMessages";
 export * from "./fileUploads";
 export * from "./messageAttachments";
+export * from "./subscription";
 
 export const relations = {
   chatMessages: chatMessagesRelations,

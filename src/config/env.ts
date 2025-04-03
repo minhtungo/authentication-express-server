@@ -46,4 +46,8 @@ export const env = cleanEnv(process.env, {
   // MinIO
   MINIO_ROOT_USER: str(),
   MINIO_ROOT_PASSWORD: str(),
+  // Stripe
+  STRIPE_SECRET_KEY: str(),
+  STRIPE_WEBHOOK_SECRET: str(),
+  STRIPE_PRO_PRICE_ID: str(),
 });

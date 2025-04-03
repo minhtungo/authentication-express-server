@@ -15,8 +15,10 @@ import { appConfig } from "@/config/appConfig";
 import { connectRedis } from "@/lib/redis";
 import assertAuthentication from "@/middlewares/assertAuthentication";
 import { chatRouter } from "@/modules/chat/chatRouter";
+import { subscriptionRouter } from "@/modules/subscription/subscriptionRouter";
 import { uploadRouter } from "@/modules/upload/uploadRouter";
 import { userRouter } from "@/modules/user/userRouter";
+import { webhookRouter } from "@/modules/webhook/webhookRouter";
 import cookieParser from "cookie-parser";
 import passport from "passport";
 
@@ -48,6 +50,9 @@ app.use(`${appConfig.rootPath}/auth`, authRouter);
 app.use(`${appConfig.rootPath}/chat`, assertAuthentication, chatRouter);
 app.use(`${appConfig.rootPath}/upload`, assertAuthentication, uploadRouter);
 app.use(`${appConfig.rootPath}/user`, assertAuthentication, userRouter);
+
+app.use(`${appConfig.rootPath}/subscriptions`, subscriptionRouter);
+app.use(`${appConfig.rootPath}/webhooks`, webhookRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
