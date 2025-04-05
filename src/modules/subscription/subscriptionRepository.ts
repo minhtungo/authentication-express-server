@@ -1,5 +1,6 @@
 import { db } from "@/db";
-import { type SubscriptionStatus, subscriptions } from "@/db/schemas/subscription/subscription";
+import type { SubscriptionStatus } from "@/db/schemas";
+import { subscriptions } from "@/db/schemas/subscriptions/subscriptions";
 import { eq } from "drizzle-orm";
 
 export type SubscriptionData = {

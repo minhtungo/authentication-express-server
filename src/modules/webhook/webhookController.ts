@@ -26,9 +26,15 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        const userId = session.metadata?.userId;
+        if (!userId) {
+          throw new Error("No user ID in session metadata");
+        }
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-
-        await stripeService.handleSubscriptionCreated(subscription);
+        const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+          metadata: { userId },
+        });
+        await stripeService.handleSubscriptionCreated(updatedSubscription);
         break;
       }
       case "customer.subscription.updated": {

@@ -2,15 +2,6 @@ import { subscriptionStatusSchema } from "@/db/schemas/constants";
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "../users";
 
-export type SubscriptionStatus =
-  | "active"
-  | "canceled"
-  | "incomplete"
-  | "incomplete_expired"
-  | "past_due"
-  | "trialing"
-  | "unpaid";
-
 export const subscriptions = pgTable("subscriptions", {
   id: text()
     .primaryKey()

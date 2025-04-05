@@ -29,6 +29,8 @@ const app: Express = express();
   await connectRedis();
 })();
 
+app.use(`${appConfig.rootPath}/webhooks`, webhookRouter);
+
 // Set the application to trust the reverse proxy
 app.set("trust proxy", true);
 
@@ -52,7 +54,6 @@ app.use(`${appConfig.rootPath}/upload`, assertAuthentication, uploadRouter);
 app.use(`${appConfig.rootPath}/user`, assertAuthentication, userRouter);
 
 app.use(`${appConfig.rootPath}/subscriptions`, subscriptionRouter);
-app.use(`${appConfig.rootPath}/webhooks`, webhookRouter);
 
 // Swagger UI
 app.use(openAPIRouter);

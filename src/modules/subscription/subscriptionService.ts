@@ -20,7 +20,7 @@ class SubscriptionService {
 
       return ServiceResponse.success(
         "Checkout session created successfully",
-        { url: session.url, sessionId: session.id },
+        { url: session?.url, sessionId: session?.id },
         StatusCodes.OK,
       );
     } catch (error) {

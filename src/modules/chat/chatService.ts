@@ -149,7 +149,7 @@ class ChatService {
         content: assistantResponse,
         role: "assistant",
       });
-      res.write("event: done\ndata: {}\n\n");
+      res.write(`event: done\ndata: ${JSON.stringify({ message: userMessage })}\n\n`);
       res.end();
     } catch (error) {
       logger.error("Error streaming completion:", error);

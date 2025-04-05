@@ -24,7 +24,6 @@ export class StripeService {
   async createCheckoutSession(userId: string, planId: string, returnUrl: string) {
     try {
       const user = await userRepository.getUserById(userId);
-
       if (!user) {
         throw new Error("User not found");
       }
@@ -43,23 +42,28 @@ export class StripeService {
 
         await subscriptionRepository.updateStripeCustomerId(userId, stripeCustomerId);
       }
+      let session: Stripe.Checkout.Session | null = null;
 
-      const session = await stripe.checkout.sessions.create({
-        customer: stripeCustomerId,
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price: planId,
-            quantity: 1,
+      try {
+        session = await stripe.checkout.sessions.create({
+          customer: stripeCustomerId,
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price: planId,
+              quantity: 1,
+            },
+          ],
+          mode: "subscription",
+          success_url: `${returnUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${returnUrl}?canceled=true`,
+          metadata: {
+            userId,
           },
-        ],
-        mode: "subscription",
-        success_url: `${returnUrl}?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${returnUrl}?canceled=true`,
-        metadata: {
-          userId,
-        },
-      });
+        });
+      } catch (error) {
+        console.log("testing", error);
+      }
 
       return session;
     } catch (error) {
@@ -84,6 +88,7 @@ export class StripeService {
       if (!userId) {
         throw new Error("No user ID in subscription metadata");
       }
+      console.log("subscription", userId);
 
       await subscriptionRepository.createOrUpdateSubscription({
         userId,
