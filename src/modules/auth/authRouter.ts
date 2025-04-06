@@ -11,6 +11,7 @@ import {
   VerifyEmailSchema,
 } from "@/modules/auth/authModel";
 
+import { appConfig } from "@/config/appConfig";
 import { paths } from "@/config/path";
 import { validateRequest } from "@/utils/httpHandlers";
 import { authController } from "./authController";
@@ -20,7 +21,7 @@ export const authRouter: Router = express.Router();
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/sign-up",
+  path: `/auth/${paths.auth.signUp.path}`,
   tags: ["Auth"],
   request: {
     body: {
@@ -38,7 +39,7 @@ authRouter.post(paths.auth.signUp.path, validateRequest(z.object({ body: SignUpS
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/sign-in",
+  path: `/auth/${paths.auth.signIn.path}`,
   tags: ["Auth"],
   request: {
     body: {
@@ -62,7 +63,7 @@ authRouter.post(paths.auth.signIn.path, validateRequest(z.object({ body: SignInS
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/verify-email",
+  path: `/auth/${paths.auth.verifyEmail.path}`,
   tags: ["Auth"],
   request: {
     body: {
@@ -84,7 +85,7 @@ authRouter.put(
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/forgot-password",
+  path: `/auth/${paths.auth.forgotPassword.path}`,
   tags: ["Auth"],
   request: {
     body: {
@@ -106,7 +107,7 @@ authRouter.post(
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/reset-password",
+  path: `/auth/${paths.auth.resetPassword.path}`,
   tags: ["Auth"],
   request: {
     body: {
@@ -128,7 +129,7 @@ authRouter.post(
 
 authRegistry.registerPath({
   method: "get",
-  path: "/auth/google",
+  path: `/auth/${paths.auth.googleOAuth.path}`,
   tags: ["Auth"],
   responses: createApiResponse(z.object({}), "Success"),
 });
@@ -137,7 +138,7 @@ authRouter.get(paths.auth.googleOAuth.path, authController.handleOAuthSignIn);
 
 authRegistry.registerPath({
   method: "get",
-  path: "/auth/google/callback",
+  path: `/auth/${paths.auth.googleOAuth.callback.path}`,
   tags: ["Auth"],
   responses: createApiResponse(z.object({}), "Success"),
 });
@@ -146,7 +147,7 @@ authRouter.get(paths.auth.googleOAuth.callback.path, authController.handleOauthS
 
 authRegistry.registerPath({
   method: "post",
-  path: "/auth/signout",
+  path: `/auth/${paths.auth.signOut.path}`,
   tags: ["Auth"],
   responses: createApiResponse(z.object({}), "Success"),
 });
@@ -155,7 +156,7 @@ authRouter.post(paths.auth.signOut.path, authController.signOut);
 
 authRegistry.registerPath({
   method: "put",
-  path: "/auth/refresh",
+  path: `/auth/${paths.auth.refresh.path}`,
   tags: ["Auth"],
   responses: createApiResponse(z.object({}), "Success"),
 });

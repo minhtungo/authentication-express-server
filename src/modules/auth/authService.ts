@@ -153,7 +153,6 @@ export class AuthService {
   async signOut(refreshToken: string): Promise<ServiceResponse> {
     try {
       const payload = verify(refreshToken, appConfig.token.refreshToken.secret) as RefreshTokenPayload;
-
       await addTokenToBlacklist(payload.sessionId, appConfig.token.refreshToken.expiresIn);
       return ServiceResponse.success("Signed out successfully", null, StatusCodes.OK);
     } catch (ex) {
