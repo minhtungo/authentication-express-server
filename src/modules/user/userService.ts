@@ -1,5 +1,6 @@
 import { verifyPassword } from "@/lib/password";
 import { ServiceResponse } from "@/lib/serviceResponse";
+import { SubscriptionRepository } from "@/modules/subscription/subscriptionRepository";
 import type { UpdateUserSettings } from "@/modules/user/userModel";
 import { UserRepository } from "@/modules/user/userRepository";
 import { logger } from "@/utils/logger";
@@ -7,9 +8,14 @@ import { StatusCodes } from "http-status-codes";
 
 export class UserService {
   private userRepository: UserRepository;
+  private subscriptionRepository: SubscriptionRepository;
 
-  constructor(repository: UserRepository = new UserRepository()) {
-    this.userRepository = repository;
+  constructor(
+    userRepository: UserRepository = new UserRepository(),
+    subscriptionRepository: SubscriptionRepository = new SubscriptionRepository(),
+  ) {
+    this.userRepository = userRepository;
+    this.subscriptionRepository = subscriptionRepository;
   }
 
   async getMe(userId: string) {
@@ -20,14 +26,26 @@ export class UserService {
     }
 
     const userSettings = await this.userRepository.getUserSettingsByUserId(userId);
+    const subscription = await this.subscriptionRepository.getSubscriptionByUserId(userId);
 
     const { password, ...userWithoutPassword } = user;
+
+    // Check if currentPeriodEnd is valid (not null, not epoch start date)
+    const hasValidPeriodEnd =
+      subscription?.currentPeriodEnd && subscription.currentPeriodEnd.getTime() > new Date(0).getTime();
 
     const userWithSettings = {
       ...userWithoutPassword,
       settings: {
         isTwoFactorEnabled: userSettings?.isTwoFactorEnabled,
         theme: userSettings?.theme,
+      },
+      subscription: {
+        planType: subscription?.planType || "free",
+        status: subscription?.status || "active",
+        currentPeriodStart: subscription?.currentPeriodStart,
+        currentPeriodEnd: hasValidPeriodEnd ? subscription?.currentPeriodEnd : null,
+        cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,
       },
     };
 

@@ -90,6 +90,11 @@ export class StripeService {
       }
       console.log("subscription", userId);
 
+      const currentPeriodStart = new Date(subscription.start_date * 1000);
+      const currentPeriodEnd = subscription.ended_at
+        ? new Date(subscription.ended_at * 1000)
+        : new Date(subscription.start_date * 1000 + 30 * 24 * 60 * 60 * 1000);
+
       await subscriptionRepository.createOrUpdateSubscription({
         userId,
         status: subscription.status as SubscriptionStatus,
@@ -97,12 +102,10 @@ export class StripeService {
         stripeSubscriptionId: subscription.id,
         stripePriceId: subscription.items.data[0].price.id,
         stripeCustomerId: subscription.customer as string,
-        currentPeriodStart: new Date(subscription.start_date * 1000),
-        currentPeriodEnd: new Date(subscription.ended_at! * 1000),
+        currentPeriodStart,
+        currentPeriodEnd,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
-
-      await userRepository.updateUserProfile(userId, { plan: "pro" });
 
       return true;
     } catch (error) {
@@ -121,16 +124,17 @@ export class StripeService {
           throw new Error("Cannot find user for subscription");
         }
 
+        const currentPeriodStart = new Date(subscription.start_date * 1000);
+        const currentPeriodEnd = subscription.ended_at
+          ? new Date(subscription.ended_at * 1000)
+          : new Date(subscription.start_date * 1000 + 30 * 24 * 60 * 60 * 1000);
+
         await subscriptionRepository.updateSubscription(existingSub.userId, {
           status: subscription.status as SubscriptionStatus,
-          currentPeriodStart: new Date(subscription.start_date * 1000),
-          currentPeriodEnd: new Date(subscription.ended_at! * 1000),
+          currentPeriodStart,
+          currentPeriodEnd,
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
         });
-
-        if (subscription.status === "canceled" || subscription.status === "unpaid") {
-          await userRepository.updateUserProfile(existingSub.userId, { plan: "free" });
-        }
       }
 
       return true;

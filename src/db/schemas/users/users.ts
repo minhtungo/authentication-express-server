@@ -9,5 +9,4 @@ export const users = pgTable("users", {
   password: text(),
   emailVerified: timestamp({ mode: "date" }),
   image: text(),
-  plan: varchar({ enum: ["free", "pro"] }).default("free"),
 });
