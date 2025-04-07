@@ -13,7 +13,6 @@ class ChatController {
 
   public deleteChatRoom = async (req: Request, res: Response) => {
     const { chatId } = req.params;
-    console.log("deleteChatRoom chatId", chatId);
     const userId = req.user?.id!;
 
     const serviceResponse = await chatService.deleteChatRoom({ userId, chatId });

@@ -94,7 +94,6 @@ export class AuthService {
       }
 
       const isPasswordValid = await verifyPassword(user.password, password);
-      console.log(isPasswordValid);
       if (!isPasswordValid) {
         return {
           refreshToken: "",

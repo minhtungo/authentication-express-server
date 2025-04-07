@@ -62,7 +62,7 @@ export class StripeService {
           },
         });
       } catch (error) {
-        console.log("testing", error);
+        logger.error("Error creating checkout session:", error);
       }
 
       return session;
@@ -88,7 +88,6 @@ export class StripeService {
       if (!userId) {
         throw new Error("No user ID in subscription metadata");
       }
-      console.log("subscription", userId);
 
       const currentPeriodStart = new Date(subscription.start_date * 1000);
       const currentPeriodEnd = subscription.ended_at

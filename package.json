@@ -21,8 +21,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push",
-    "db:generate": "drizzle-kit generate",
-    "setup-minio": "node scripts/setup-minio.js"
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.0",

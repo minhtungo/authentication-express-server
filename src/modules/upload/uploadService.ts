@@ -85,8 +85,6 @@ export class UploadService {
         userId,
       });
 
-      console.log(fileUpload);
-
       return ServiceResponse.success("File upload recorded successfully", fileUpload);
     } catch (ex) {
       const errorMessage = `Error confirming upload: ${(ex as Error).message}`;
